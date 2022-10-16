@@ -9,8 +9,16 @@ This repository contains the source code for the [Building Modern Web Applicatio
 ## Branches
 
 - The main branch contains the source code for the latest Vaadin release
-- The `v14` branch contains the source code for Vaadin 14 LTS
-
 
 ## Text tutorial
 You can find a text version of the tutorial in the [Vaadin Documentation](https://vaadin.com/docs/latest/flow/tutorials/in-depth-course).
+
+## How to run the app
+```
+$ gradle bootRun
+```
+
+## How to check all tasks
+```
+$ gradle tasks --all
+```
