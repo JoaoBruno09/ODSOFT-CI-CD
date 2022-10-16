@@ -3,5 +3,13 @@
  *
  * This project uses @Incubating APIs which are subject to change.
  */
-
+pluginManagement {
+    repositories {
+        maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+        gradlePluginPortal()
+    }
+    plugins {
+        id 'com.vaadin' version "${vaadinVersion}"
+    }
+}
 rootProject.name = 'flowcrmtutorial'
