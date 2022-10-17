@@ -21,7 +21,7 @@ import javax.annotation.security.PermitAll;
 @Scope("prototype")
 @Route(value = "", layout = MainLayout.class)
 @PageTitle("Contacts | Vaadin CRM")
-//@PermitAll //TODO: enable security
+@PermitAll
 public class ListView extends VerticalLayout {
     Grid<Contact> grid = new Grid<>(Contact.class);
     TextField filterText = new TextField();

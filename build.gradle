@@ -5,11 +5,12 @@ buildscript {
         maven { setUrl("https://maven.vaadin.com/vaadin-addons") }
     }
 }
+
 plugins {
-    id 'org.springframework.boot' version '2.2.4.RELEASE'
-    id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+    id 'org.springframework.boot' version "$springBootVersion"
+    id 'io.spring.dependency-management' version "1.0.14.RELEASE"
     id 'java'
-    id 'com.vaadin'
+    id 'com.vaadin' version "23.2.4"
 }
 
 defaultTasks("clean", "build")
@@ -34,9 +35,12 @@ configurations {
 dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-devtools' //faster reloas
 
-    implementation "com.vaadin:vaadin-core:20.+"
+    implementation "com.vaadin:vaadin-core:$vaadinVersion"
     implementation "com.vaadin:vaadin:$vaadinVersion"
-    implementation "com.vaadin:vaadin-spring-boot-starter:$vaadinVersion"
+
+    implementation group: 'com.vaadin', name: 'vaadin-spring-boot-starter', version: "$vaadinVersion"
+
+    //implementation "com.vaadin:vaadin-spring-boot-starter:$vaadinVersion"
     implementation 'org.vaadin.artur.exampledata:exampledata:3.4.0'
     implementation('com.vaadin:vaadin-spring-boot-starter')
 
@@ -44,7 +48,7 @@ dependencies {
 
     implementation "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-starter-validation:$springBootVersion"
-    //implementation "org.springframework.boot:spring-boot-starter-security:$springBootVersion"
+    implementation "org.springframework.boot:spring-boot-starter-security:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-devtools:$springBootVersion"
 
     implementation enforcedPlatform("com.vaadin:vaadin-bom:$vaadinVersion")
@@ -57,12 +61,10 @@ dependencies {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
         //implementation "org.springframework.boot:spring-boot-starter-security:$springBootVersion"
     }
-//    providedCompile "javax.servlet:javax.servlet-api:3.1.0"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
-    testImplementation "io.github.bonigarcia:webdrivermanager:3.8.1"
+    //testImplementation "io.github.bonigarcia:webdrivermanager:3.8.1"
 
-    //providedCompile "javax.servlet:javax.servlet-api:3.1.0"
 }
 
 dependencyManagement {
@@ -80,7 +82,7 @@ test {
 // this is just an example of how to configure the Gradle Vaadin Plugin:
 // for more configuration options please see: https://vaadin.com/docs/latest/guide/start/gradle/#all-options
 vaadin {
-    pnpmEnable = false; //false triggers more performance during development
+    pnpmEnable = false //false triggers more performance during development
 }
 
 tasks.withType(JavaCompile) {
