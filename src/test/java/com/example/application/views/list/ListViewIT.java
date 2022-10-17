@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 @SpringBootTest
-public class ListViewTest {
+public class ListViewIT {
 
     @Autowired
     private ListView listView;

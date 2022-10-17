@@ -3,7 +3,7 @@ package com.example.application.views.list;
 import com.example.application.data.entity.Company;
 import com.example.application.data.entity.Contact;
 import com.example.application.data.entity.Status;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ public class ContactFormTest {
     private Status status1;
     private Status status2;
 
-    @BeforeAll
+    @BeforeEach
     public void setupData() {
         companies = new ArrayList<>();
         company1 = new Company();
