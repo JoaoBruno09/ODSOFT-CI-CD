@@ -1,72 +1,58 @@
-# Spring Boot and Vaadin course source code
 
-This repository contains the source code for the [Building Modern Web Applications With Spring Boot and Vaadin](https://vaadin.com/docs/latest/flow/tutorials/in-depth-course).
+# ODSOFT REPORT
 
-*Live demo:* https://crm.demo.vaadin.com
+This is the repository of g202, and the members are:
 
-Prerequisites:
-* Java 8 or higher
-* node.js and
-* npm. Vaadin Gradle plugin will install those for you
-  automatically (handy for CI), or you can install it to your OS:
-    * Windows: [node.js Download site](https://nodejs.org/en/download/) - use the .msi 64-bit installer
-    * Linux: `sudo apt install npm`
-* Git
-* (Optionally): Intellij Community
+Gonçalo Pinho - 1220257
+João Rocha - 1220256
+Nuno Leite - 1220271
+Tiago Lacerda - 1220285
 
-## Branches
-- The main branch contains the source code for the latest Vaadin release
+## Pipeline Design
 
-## Text tutorial
-You can find a text version of the tutorial in the [Vaadin Documentation](https://vaadin.com/docs/latest/flow/tutorials/in-depth-course).
+Initialy we started to design the pipelines (Sequential and parallel).
 
-## Running With Spring Boot via Gradle In Development Mode
+  
 
-Run the following command in this repo:
+**Sequential pipeline**
 
-```bash
-./gradlew clean bootRun
+![Alt text](pipeline-diagrams/sequential_pipeline.png?raw=true  "Sequencial pipeline diagram")
+
+  
+
+Sequential pipeline, as the name says, executes the stages in a sequence.
+
+  
+
+**Parallel pipeline**
+
+![Alt text](pipeline-diagrams/parallel_pipeline.png?raw=true  "Sequencial pipeline diagram")
+
+  
+
+Parallel pipeline, can execute more than one task at the same time so that we can use hardware more efficiently and save time (or not).
+
+  
+
+## Group Tasks:
+
+ - [x] **1º Task - Repository Checkout:**
+
+For that we used the snippet generator and picked the sample step "checkout" where we indicate the repository and branch and we can generate the code snippet that will checkout the repository.
+
+  
+
+Created the pipeline and created the stage checkout.
+
+  
+
+```groovy
+node{
+	stage('checkout'){
+		checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'git@bitbucket.org:mei-isep/odsoft-22-23-ncf-g202.git']]])
+	}
+}
+
 ```
 
-Now you can open the [http://localhost:8080](http://localhost:8080) with your browser.
-
-## Running With Spring Boot from your IDE In Development Mode
-
-Run the following command in this repo, to create necessary Vaadin config files:
-
-```bash
-./gradlew clean vaadinPrepareFrontend
-```
-
-The `build/vaadin-generated/` folder will now contain proper configuration files.
-
-Open the `DemoApplication` class, and Run/Debug its main method from your IDE.
-
-Now you can open the [http://localhost:8080](http://localhost:8080) with your browser.
-
-## Building In Production Mode
-
-Run the following command in this repo:
-
-```bash
-./gradlew clean build -Pvaadin.productionMode
-```
-
-That will build this app in production mode as a runnable jar archive; please find the jar file in `build/libs/base-starter-spring-gradle*.jar`.
-You can run the JAR file with:
-
-```bash
-cd build/libs/
-java -jar base-starter-spring-gradle*.jar
-```
-
-Now you can open the [http://localhost:8080](http://localhost:8080) with your browser.
-
-### Building In Production On CI
-
-Usually the CI images will not have node.js+npm available. However, Vaadin Gradle Plugin will download it for you automatically, there is no need for you to do anything.
-To build your app for production in CI, just run:
-
-```bash
-./gradlew clean build -Pvaadin.productionMode
-```
+This step, when executed for the first time, will fetch all the data from the repository. The next times will only fetch the updates.
