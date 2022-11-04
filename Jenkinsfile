@@ -10,4 +10,13 @@ node{
             bat './gradlew clean build "-Pvaadin.productionMode" war'
         }
     }
+
+    stage('javadoc'){
+        if (isUnix()){
+            sh './gradlew javadoc'
+        }else{
+            bat './gradlew javadoc'
+        }
+        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/javadoc/', reportFiles: 'index.html', reportName: 'Javadoc', reportTitles: '', useWrapperFileDirectly: true])
+    }
 }

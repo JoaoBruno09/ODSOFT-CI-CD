@@ -102,3 +102,9 @@ configurations {
         extendsFrom developmentOnly
     }
 }
+
+//Javadoc task
+javadoc {
+  source = sourceSets.main.allJava
+  destinationDir = reporting.file("javadoc")
+}
