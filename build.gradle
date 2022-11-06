@@ -115,7 +115,7 @@ task integrationTest(type: Test) {
     useJUnitPlatform() // use JUnit framework
     reports {
         reports.html.required = true
-        reports.html.destination = file("/src/main/junitReports/integration") // html file destination
+        reports.html.destination = file("/build/htmlReports/junitReports/integration") // html file destination
     }
     filter{
         includeTestsMatching "*IT"  // filter by names with "IT"
