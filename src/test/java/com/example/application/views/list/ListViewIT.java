@@ -33,4 +33,19 @@ public class ListViewIT {
         return ((ListDataProvider<Contact>) grid.getDataProvider()).getItems()
                 .iterator().next();
     }
+
+
+    @Test
+    public void formInvisibleWhenContactDeselected() {
+        Contact emptyContact = new Contact();
+
+        ContactForm form = listView.form;
+
+        form.setVisible(true);
+
+        assertTrue(form.isVisible());
+        form.setVisible(false);
+        assertFalse(form.isVisible());
+        assertEquals(emptyContact.getFirstName(), form.firstName.getValue());
+    }
 }

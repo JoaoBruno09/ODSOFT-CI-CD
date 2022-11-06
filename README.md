@@ -110,3 +110,29 @@ After running the stage successfully on the pipeline, on the left side tab we ca
 ![Side tab](https://i.imgur.com/NPkp29U.png)
 
 If we click on it we get redirected to the report! 
+
+# Individual Goals
+
+## Integration Tests
+
+Integration test is a type of software testing in which the different units, modules or components of a software application are tested as a combined entity.
+
+ - [x] **Integration Tests Execution**
+
+For this stage, we created another integration test to add to the project:
+
+``` java
+@Test
+public  void  formShownWhenContactDeselected() {
+	Grid<Contact> grid = listView.grid;
+	Contact  emptyContact = new  Contact();
+	ContactForm  form = listView.form;
+	form.setVisible(true);
+	assertTrue(form.isVisible());
+	grid.asSingleSelect().setValue(emptyContact);
+	form.setVisible(false);
+	assertFalse(form.isVisible());
+	assertEquals(emptyContact.getFirstName(), form.firstName.getValue());
+}
+```
+This test is meant to verify if the form stays invisible after pressing the button. The test starts by initializing an empty contact, after that opens a contact form and verify if it is visible. If so, the value of the empty contact is set and the form isn't visible anymore. Last, there is a comparation between the first name of the empty contact and the first name present in the form.
