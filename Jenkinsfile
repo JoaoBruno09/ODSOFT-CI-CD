@@ -21,11 +21,26 @@ node{
     }
 
     stage('integrationReport'){
+        echo 'Running Integration Tests...'
         if (isUnix()){
             sh './gradlew integrationTest'
         }else{
             bat './gradlew integrationTest'
         }
+        echo 'Generating Integration Test HTML Report and started Publishing...'
         publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/integration', reportFiles: 'index.html', reportName: 'IntegrationTests Report', reportTitles: '', useWrapperFileDirectly: true])
+        echo 'Published Integration Test HTML Report!'
+    }
+
+    stage('integrationReportCoverage'){
+        echo 'Generating Integration Test Coverage Report...'
+        if (isUnix()){
+            sh './gradlew jacocoIntegrationReport'
+        }else{
+            bat './gradlew jacocoIntegrationReport'
+        }
+        echo 'Generated Integration Test Coverage Report and started Publishing...'
+        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/jacoco/jacocoIntegrationReport/html', reportFiles: 'index.html', reportName: 'IntegrationTests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
+        echo 'Published Integration Test Coverage Report!'    
     }
 }
