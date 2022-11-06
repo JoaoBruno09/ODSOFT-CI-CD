@@ -19,4 +19,13 @@ node{
         }
         publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/javadoc/', reportFiles: 'index.html', reportName: 'Javadoc', reportTitles: '', useWrapperFileDirectly: true])
     }
+
+    stage('integrationReport'){
+        if (isUnix()){
+            sh './gradlew integrationTest'
+        }else{
+            bat './gradlew integrationTest'
+        }
+        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/integration', reportFiles: 'index.html', reportName: 'IntegrationTests Report', reportTitles: '', useWrapperFileDirectly: true])
+    }
 }
