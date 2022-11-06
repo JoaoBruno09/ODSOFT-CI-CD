@@ -108,3 +108,14 @@ javadoc {
   source = sourceSets.main.allJava
   destinationDir = reporting.file("javadoc")
 }
+
+task integrationTest(type: Test) {
+    useJUnitPlatform()
+    reports {
+        reports.html.required = true
+        reports.html.destination = file("/src/main/junitReports/integration")
+    }
+    filter{
+        includeTestsMatching "*IT"
+    }
+}

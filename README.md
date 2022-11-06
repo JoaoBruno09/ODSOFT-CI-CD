@@ -136,3 +136,20 @@ public  void  formShownWhenContactDeselected() {
 }
 ```
 This test is meant to verify if the form stays invisible after pressing the button. The test starts by initializing an empty contact, after that opens a contact form and verify if it is visible. If so, the value of the empty contact is set and the form isn't visible anymore. Last, there is a comparation between the first name of the empty contact and the first name present in the form.
+
+ - [x] **Integration Tests HTML Report Generation**
+
+To generate the HTML test report, we need to create a task of type ``Test`` and we named it ``integrationTest``. For this, we used the [JUnit framework](https://junit.org/junit5/), and we specify that we require a HTML report, which will be generated in the directory ``/build/htmlReports/junitReports/integration``. We also applied a filter that only executes tests that contains "IT" in the name.
+
+```` java
+task  integrationTest(type: Test) {
+	useJUnitPlatform()
+	reports {
+		reports.html.required = true
+		reports.html.destination = file("/build/htmlReports/junitReports/integration")
+		}
+	filter{
+		includeTestsMatching  "*IT"
+		}
+}
+````
