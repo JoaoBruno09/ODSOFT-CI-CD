@@ -36,7 +36,8 @@ public class ListViewIT {
 
 
     @Test
-    public void formInvisibleWhenContactDeselected() {
+    public void formShownWhenContactDeselected() {
+        Grid<Contact> grid = listView.grid;
         Contact emptyContact = new Contact();
 
         ContactForm form = listView.form;
@@ -44,6 +45,7 @@ public class ListViewIT {
         form.setVisible(true);
 
         assertTrue(form.isVisible());
+        grid.asSingleSelect().setValue(emptyContact);
         form.setVisible(false);
         assertFalse(form.isVisible());
         assertEquals(emptyContact.getFirstName(), form.firstName.getValue());

@@ -12,6 +12,7 @@ plugins {
     id 'java'
     id 'com.vaadin' version "23.2.4"
     id 'war'
+    id 'jacoco'
 }
 
 defaultTasks("clean", "build")
@@ -109,13 +110,27 @@ javadoc {
   destinationDir = reporting.file("javadoc")
 }
 
+//Task that runs integration tests
 task integrationTest(type: Test) {
-    useJUnitPlatform()
+    useJUnitPlatform() // use JUnit framework
     reports {
         reports.html.required = true
-        reports.html.destination = file("/src/main/junitReports/integration")
+        reports.html.destination = file("/src/main/junitReports/integration") // html file destination
     }
     filter{
-        includeTestsMatching "*IT"
+        includeTestsMatching "*IT"  // filter by names with "IT"
+    }
+}
+
+// Task that generates integration coverage reports using Jacoco
+task jacocoIntegrationReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
+	sourceSets sourceSets.main
+	
+    getExecutionData().setFrom("/build/jacoco/integrationTest.exec")  //getting the execution data of integration test 
+    
+    reports {
+        html.enabled = true
+        xml.enabled = false
+        csv.enabled = false
     }
 }
