@@ -115,7 +115,7 @@ task integrationTest(type: Test) {
     useJUnitPlatform() // use JUnit framework
     reports {
         reports.html.required = true
-        reports.html.destination = file("/build/htmlReports/junitReports/integration") // html file destination
+        reports.html.destination = file("build/htmlReports/junitReports/integration") // html file destination
     }
     filter{
         includeTestsMatching "*IT"  // filter by names with "IT"
@@ -126,7 +126,7 @@ task integrationTest(type: Test) {
 task jacocoIntegrationReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
 	sourceSets sourceSets.main
 	
-    getExecutionData().setFrom("/build/jacoco/integrationTest.exec")  //getting the execution data of integration test 
+    getExecutionData().setFrom("build/jacoco/integrationTest.exec")  //getting the execution data of integration test 
     
     reports {
         html.enabled = true
