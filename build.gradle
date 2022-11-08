@@ -146,3 +146,16 @@ task unitTest(type: Test) {
         includeTestsMatching "*Test"  // filter by names with "Test"
     }
 }
+
+// Task that generates unit coverage reports using Jacoco
+task jacocoUnitReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
+	sourceSets sourceSets.main
+	
+    getExecutionData().setFrom("build/jacoco/unitTest.exec")  //getting the execution data of unit test 
+    
+    reports {
+        html.enabled = true
+        xml.enabled = false
+        csv.enabled = false
+    }
+}
