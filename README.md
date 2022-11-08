@@ -405,6 +405,7 @@ id 'info.solidsoft.pitest' version '1.7.4'
 
 pitest  {
 	
+	junit5PluginVersion = '0.15'
 
 }
 

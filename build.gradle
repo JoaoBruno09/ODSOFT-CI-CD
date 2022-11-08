@@ -83,6 +83,8 @@ test {
 
 pitest {
 
+    junit5PluginVersion = '0.15'
+
 }
 
 // The following pnpmEnable = true is not needed as pnpm is used by default,
@@ -157,6 +159,19 @@ task jacocoUnitReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
 	sourceSets sourceSets.main
 	
     getExecutionData().setFrom("build/jacoco/unitTest.exec")  //getting the execution data of unit test 
+    
+    reports {
+        html.enabled = true
+        xml.enabled = false
+        csv.enabled = false
+    }
+}
+
+// Task that generates mutation coverage reports using Jacoco
+task jacocoMutationReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
+	sourceSets sourceSets.main
+	
+    getExecutionData().setFrom("build/jacoco/mutationTest.exec")  //getting the execution data of mutation test 
     
     reports {
         html.enabled = true
