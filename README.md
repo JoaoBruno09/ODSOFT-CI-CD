@@ -401,16 +401,38 @@ For this stage, we created and executed mutation test to add to the project our 
 
 id 'info.solidsoft.pitest' version '1.7.4'
 
+In our task with the name of 'pitest' we need to contain the version of 'junit plugin' and a command called 'timestampedReports' for our file don't come with datatime format.
+
 ```groovy
 
 pitest  {
 	
 	junit5PluginVersion = '0.15'
+	timestampedReports = false
 
 }
 
+- [x] **Mutation Tests HTML Coverage Report Publishing**
+
+To publish the Mutation Tests HTML Report, we only need to add this stage to the JenkinsFile:
+
+```groovy
+
+stage('mutationReportCoverage'){
+        echo 'Generating Mutation Test Coverage Report...'
+        if (isUnix()){
+            sh './gradlew mutationCoverageReport'
+        }else{
+            bat './gradlew mutationCoverageReport'
+        }
+        echo 'Generated Mutation Test Coverage Report and started Publishing...'
+        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/pitest', reportFiles: 'index.html', reportName: 'Mutation Tests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
+        echo 'Published Mutation Test Coverage Report!'    
+}
 
 ```
+
+This command allows Jenkins to find the report, in the mentioned directory `build/reports/pitest` and look for the `index.html`. Then, Jenkins generate a report named Mutation Tests Coverage Report.
 
 
 \*\*

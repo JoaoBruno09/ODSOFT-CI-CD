@@ -67,4 +67,16 @@ node{
         publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/jacoco/jacocoUnitReport/html', reportFiles: 'index.html', reportName: 'UnitTests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
         echo 'Published Unit Test Coverage Report!'    
     }
+
+    stage('mutationReportCoverage'){
+        echo 'Generating Mutation Test Coverage Report...'
+        if (isUnix()){
+            sh './gradlew mutationCoverageReport'
+        }else{
+            bat './gradlew mutationCoverageReport'
+        }
+        echo 'Generated Mutation Test Coverage Report and started Publishing...'
+        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/pitest', reportFiles: 'index.html', reportName: 'Mutation Tests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
+        echo 'Published Mutation Test Coverage Report!'    
+    }
 }
