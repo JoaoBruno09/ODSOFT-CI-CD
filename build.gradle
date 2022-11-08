@@ -84,6 +84,7 @@ test {
 pitest {
 
     junit5PluginVersion = '0.15'
+    timestampedReports = false
 
 }
 
