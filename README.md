@@ -303,4 +303,23 @@ public  void  loginFormTesting()  {
 
 This unit test is responsible to verify if the Login Form is working correctly. First of all, creates a LoginForm and set its login action. Furthermore, was instantiated a LoginEvent with the username and password whose should be the corrects ones. Finally, the assertEquals confirmed that the username and password, passed in LoginEvent, and those expected values are equal.
 
+- [x] **Unit Tests HTML Report Generation**
+
+To generate the HTML test report, we need to create a task of type `Test` and we named it as `unitTest`. For this, we used the [JUnit framework](https://junit.org/junit5/), and we specify that we require a HTML report, which will be generated in the directory `/build/htmlReports/junitReports/unit`. We also applied a filter that only executes tests that contains "Test" in the name.
+
+```java
+task unitTest(type: Test) {
+    useJUnitPlatform()
+    reports {
+        reports.html.required = true
+        reports.html.destination = file("build/htmlReports/junitReports/unit")
+    }
+    filter{
+        includeTestsMatching "*Test"
+    }
+}
+
+
+```
+
 \*\*

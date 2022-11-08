@@ -132,5 +132,17 @@ task jacocoIntegrationReport(type: org.gradle.testing.jacoco.tasks.JacocoReport)
         html.enabled = true
         xml.enabled = false
         csv.enabled = false
+    }   
+}
+
+//Task that runs unit tests
+task unitTest(type: Test) {
+    useJUnitPlatform() // use JUnit framework
+    reports {
+        reports.html.required = true
+        reports.html.destination = file("build/htmlReports/junitReports/unit") // html file destination
+    }
+    filter{
+        includeTestsMatching "*Test"  // filter by names with "Test"
     }
 }
