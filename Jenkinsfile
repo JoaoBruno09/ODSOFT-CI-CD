@@ -55,4 +55,16 @@ node{
         publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/unit', reportFiles: 'index.html', reportName: 'UnitTests Report', reportTitles: '', useWrapperFileDirectly: true])
         echo 'Published Unit Test HTML Report!'
     }
+
+    stage('unitReportCoverage'){
+        echo 'Generating Unit Test Coverage Report...'
+        if (isUnix()){
+            sh './gradlew jacocoUnitReport'
+        }else{
+            bat './gradlew jacocoUnitReport'
+        }
+        echo 'Generated Unit Test Coverage Report and started Publishing...'
+        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/jacoco/jacocoUnitReport/html', reportFiles: 'index.html', reportName: 'UnitTests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
+        echo 'Published Unit Test Coverage Report!'    
+    }
 }
