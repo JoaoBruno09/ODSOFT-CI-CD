@@ -13,6 +13,7 @@ plugins {
     id 'com.vaadin' version "23.2.4"
     id 'war'
     id 'jacoco'
+    id 'info.solidsoft.pitest' version '1.7.4'
 }
 
 defaultTasks("clean", "build")
@@ -78,6 +79,10 @@ dependencyManagement {
 test {
     useJUnitPlatform()
     include "*Test"
+}
+
+pitest {
+
 }
 
 // The following pnpmEnable = true is not needed as pnpm is used by default,
