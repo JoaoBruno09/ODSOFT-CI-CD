@@ -322,4 +322,26 @@ task unitTest(type: Test) {
 
 ```
 
+- [x] **Integration Tests HTML Report Publishing**
+
+To publish the Integration Tests HTML Report, we only need to add this stage to the JenkinsFile:
+
+```groovy
+
+    stage('unitReport'){
+        echo 'Running Unit Tests...'
+        if (isUnix()){
+            sh './gradlew unitTest'
+        }else{
+            bat './gradlew unitTest'
+        }
+        echo 'Generating Unit Test HTML Report and started Publishing...'
+        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/unit', reportFiles: 'index.html', reportName: 'UnitTests Report', reportTitles: '', useWrapperFileDirectly: true])
+        echo 'Published Unit Test HTML Report!'
+    }
+
+```
+
+This command allows Jenkins to find the report in the mentioned directory `build/htmlReports/junitReports/unit` and look for the `index.html`. Then, Jenkins generate a report named UnitTests Report.
+
 \*\*
