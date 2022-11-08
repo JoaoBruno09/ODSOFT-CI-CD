@@ -71,9 +71,9 @@ node{
     stage('mutationReportCoverage'){
         echo 'Generating Mutation Test Coverage Report...'
         if (isUnix()){
-            sh './gradlew mutationCoverageReport'
+            sh './gradlew pitest'
         }else{
-            bat './gradlew mutationCoverageReport'
+            bat './gradlew pitest'
         }
         echo 'Generated Mutation Test Coverage Report and started Publishing...'
         publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/pitest', reportFiles: 'index.html', reportName: 'Mutation Tests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
