@@ -1,5 +1,5 @@
 //VARIABLES
-def url = "http://ec2-3-85-104-7.compute-1.amazonaws.com:8080"
+def url = "http://ec2-52-200-245-199.compute-1.amazonaws.com:8080"
 node{
     stage('checkout'){
         checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'git@bitbucket.org:mei-isep/odsoft-22-23-ncf-g202.git']]])
@@ -90,7 +90,7 @@ node{
             bat "./gradlew copyArtifact"
         }
         echo "Deploying to environment..."
-        deploy adapters: [tomcat9(credentialsId: "odsoft", path: "", url: "$URL")], contextPath: "crm", war: "flowcrmtutorial-0.0.1-SNAPSHOT.war"
+        deploy adapters: [tomcat9(credentialsId: "odsoft", path: "", url: "$url")], contextPath: "crm", war: "flowcrmtutorial-0.0.1-SNAPSHOT.war"
         echo "Stage deployed!"
     }
 }
