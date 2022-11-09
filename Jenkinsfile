@@ -1,3 +1,5 @@
+//VARIABLES
+def url = "http://ec2-3-85-104-7.compute-1.amazonaws.com:8080"
 node{
     stage('checkout'){
         checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'git@bitbucket.org:mei-isep/odsoft-22-23-ncf-g202.git']]])
@@ -78,5 +80,17 @@ node{
         echo 'Generated Mutation Test Coverage Report and started Publishing...'
         publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/pitest', reportFiles: 'index.html', reportName: 'Mutation Tests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
         echo 'Published Mutation Test Coverage Report!'    
+    }
+
+    stage('staging'){
+        echo "Starting Staging Fase..."
+        if (isUnix()){
+            sh "./gradlew copyArtifact"
+        }else{
+            bat "./gradlew copyArtifact"
+        }
+        echo "Deploying to environment..."
+        deploy adapters: [tomcat9(credentialsId: "odsoft", path: "", url: "$URL")], contextPath: "crm", war: "flowcrmtutorial-0.0.1-SNAPSHOT.war"
+        echo "Stage deployed!"
     }
 }
