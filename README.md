@@ -562,6 +562,69 @@ stage('systemTest'){
 }
 ```
 
+ - [x] **3º - UI Manual Acceptance Test**
+
+For this stage we used [Sendinblue](https://www.sendinblue.com), but you can use the SMTP server of your choice, but you can follow the steps that we did.
+
+First of all, we need a Jenkins plugin so that we can send emails through the Jenkinsfile, and for that we used [Email Extension](https://plugins.jenkins.io/email-ext/).
+
+After installing the plugin, to configure it, we click on ``Manage Jenkins > Configure System`` and scroll down to ``Extended E-mail Notification``.  We indicate the SMTP server and the SMTP port and then click on ``Advanced`` and create credentials with the SMTP credentials that you have.
+
+Note: If you authenticate via SMTP Authentication do not select any of the below checkboxes!
+
+Finishing the configuration part, we opened the snippet generator with the  sample step ``emailtext: Extended Email``. 
+We just used the field to indicate the reciever and the message and generated the following script:
+```groovy
+emailext body: "Greetings developer,\n I'm here to tell you that the application is up and running! Now you should manually test it to confirm if it meets your standarts\n The link is: http://ec2-3-85-104-7.compute-1.amazonaws.com:8080/crm\n After that please proceed to manually confirm that you want to proceed or abort with the following link: http://localhost:8081/job/${env.JOB_NAME}/${env.BUILD_NUMBER}/console"  \n This is an automated message from your Jenkins job.", subject: "Job Manual Test of Build#${env.BUILD_NUMBER}", to: "1220257@isep.ipp.pt"
+```
+
+When you run the job with the shown script on the pipeline, if everything was correctly configured, you will get an email!
+
+For the user input to Proceed or Abort the build, we used Jenkins documentation, and after understanding that Jenkins has a command that allows to create user input on the console, lead to the following script:
+
+```groovy
+	userInput = input(id: 'userInput',
+	message: 'Have you manually tested the application?',
+	parameters: [[$class:'ChoiceParameterDefinition', choices: "Yes\nNo", name: 'Answer']])
+```
+
+This input, will pause the build until the user inputs the parameters and clicks on the button "Proceed" or "Abort".
+
+In case you click "Proceed", it will continue the pipeline, otherwise will abort it.
+
+ - [x] **Continuous Integration Feedback**
+
+On this last task, we had to tag the last commit that was running on the job with the build number and the build result.
+
+For that we pushed a tag to the repository that contains the build number and the result of the build.
+
+Since on this first part of the assignment we are restricted to the use of scripted pipelines we can't use the [post build action](https://www.jenkins.io/doc/book/pipeline/syntax/#post) via code, forcing us to find another solution.
+
+After some research the best solution was wrapping all the stages with a try/catch/finally statement and on the finally push the tag to the repository.
+
+
+
+Resulting on the following stage on the Jenkinsfile:
+``` groovy
+try{
+//code
+}catch(error){
+	echo "Something went wrong..."
+	throw error
+}finally{
+	echo 'Continuous Integration Feedback'
+	if (isUnix()) {
+		sh "git tag -a Build#${env.BUILD_NUMBER}-${currentBuild.currentResult} -m \"Tag generated in jenkins job\""
+		sh "git push git@bitbucket.org:goncalo-pinho/vaadin-crm-baseline-students-1220257.git --tags"
+	}else{
+		bat "git tag -a Build#${env.BUILD_NUMBER}-${currentBuild.currentResult} -m \"Tag generated in jenkins job\""
+		bat "git push git@bitbucket.org:goncalo-pinho/vaadin-crm-baseline-students-1220257.git --tags"
+	}
+}
+```
+
+That way the tag will be pushed independently of the pipeline result and last commit of the repository get associated with a tag with the following aspect #BUILD_NUMBER-BUILD_RESULT.
+
 \*\*
 
 
