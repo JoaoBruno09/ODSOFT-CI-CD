@@ -1,5 +1,6 @@
 //VARIABLES
 def url = "http://ec2-52-200-245-199.compute-1.amazonaws.com:8080"
+def job_console = "http://localhost:8081/job/${env.JOB_NAME}/${env.BUILD_NUMBER}/console"
 node{
     stage('checkout'){
         checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'git@bitbucket.org:mei-isep/odsoft-22-23-ncf-g202.git']]])
@@ -109,5 +110,17 @@ node{
             currentBuild.result = 'ABORTED'
             error('The application is not responding...') 
         }  
+    }
+
+    stage('manualTest'){
+        echo 'Sending email...'
+        emailext body: "Greetings developer,\n I'm here to tell you that the application is up and running! Now you should manually test it to confirm if it meets your standarts\n The link is: $url/crm\n After that please proceed to manually confirm that you want to proceed or abort with the following link: $job_console \n This is an automated message from your Jenkins job.", subject: "Job Manual Test of Build#${env.BUILD_NUMBER}", to: "1220257@isep.ipp.pt"
+        echo 'Waiting for manual confirmation...'
+        userInput = input(id: 'userInput',    
+                  message: 'Have you manually tested the application?',    
+                  parameters: [
+                    [$class:'ChoiceParameterDefinition', choices: "Yes\nNo", name: 'Answer']
+                         ]  
+        )
     }
 }
