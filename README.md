@@ -524,7 +524,43 @@ protected  SpringApplicationBuilder  configure(SpringApplicationBuilder  applica
 
 After that, the deploy was successful and we could open our beautiful application through the ec2 tomcat link + /crm, something like this: ``http://ec2-3-85-104-7.compute-1.amazonaws.com:8080/crm ``!
 
+ - [x] **2º - System Test**
+For the system test we will perform a automatic smoke test that will be checking if the base URL of the application is responsive after staging the deployment.
 
+For that we used the command line tool curl, that stands for client url, that is normally used for transfering data using various network protocols.
+
+We could have just print all the headers of the server response and that contains the http reponse. But we wanted to go a bit further and only print the http code.
+And depending on the operating system that the job is running, we had to make some changes.
+**For Linux**
+For linux we used the following command:
+```curl -s -o /dev/null -w '%{http_code}' $url/crm```
+Where ``$url`` is the variable that holds the url that you want to get the http code.
+
+**For Windows**
+For windows we used the following command
+```curl -s -o ./response -w '%%{http_code}' $url/crm"```
+
+
+Knowing the commands we just created a way to store the result and create a condition to verify is the response was positive and we could proceed or negative and we throw an error and abort the build.
+
+```groovy
+stage('systemTest'){
+	echo "Initiating Smoke Test"
+	if (isUnix()){
+		httpCode = sh( script: "curl -s -o /dev/null -w '%{http_code}' $url/crm", returnStdout: true ).trim()
+	}else{
+		httpCode = bat( script: "curl -s -o ./response -w '%%{http_code}' $url/crm", returnStdout: true).trim()
+		httpCode = httpCode.readLines().drop(1).join(" ")//windows returns full command plus the response, but the response is at a new line so we can drop the first line and remove spaces and we get only the http code
+	}
+//checking if the http code was ok(200) or found(302)
+	if (httpCode == "200" || httpCode == "302"){
+		echo 'The application is responding!'
+	}else{
+		currentBuild.result = 'ABORTED'
+		error('The application is not responding...')
+	}
+}
+```
 
 \*\*
 
