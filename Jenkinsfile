@@ -89,11 +89,6 @@ node{
 
         stage('staging'){
             echo "Starting Staging Fase..."
-            if (isUnix()){
-                sh "./gradlew copyArtifact"
-            }else{
-                bat "./gradlew copyArtifact"
-            }
             echo "Deploying to environment..."
             deploy adapters: [tomcat9(credentialsId: "odsoft", path: "", url: "$url")], contextPath: "crm", war: "flowcrmtutorial-0.0.1-SNAPSHOT.war"
             echo "Stage deployed!"
