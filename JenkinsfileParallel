@@ -1,5 +1,5 @@
 //VARIABLES
-def url = "http://ec2-54-159-35-124.compute-1.amazonaws.com:8080"
+def url = "http://ec2-34-207-185-190.compute-1.amazonaws.com:8080"
 def job_console = "http://localhost:8081/job/${env.JOB_NAME}/${env.BUILD_NUMBER}/console"
 node{
     try{
