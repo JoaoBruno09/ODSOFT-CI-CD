@@ -18,13 +18,28 @@ node{
             archiveArtifacts artifacts: 'flowcrmtutorial-0.0.1-SNAPSHOT.war', followSymlinks: false
         }
 
-        stage('javadoc'){
+        stage('unitReport'){
+            echo 'Running Unit Tests...'
             if (isUnix()){
-                sh './gradlew javadoc'
+                sh './gradlew unitTest'
             }else{
-                bat './gradlew javadoc'
+                bat './gradlew unitTest'
             }
-            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/javadoc/', reportFiles: 'index.html', reportName: 'Javadoc', reportTitles: '', useWrapperFileDirectly: true])
+            echo 'Generating Unit Test HTML Report and started Publishing...'
+            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/unit', reportFiles: 'index.html', reportName: 'UnitTests Report', reportTitles: '', useWrapperFileDirectly: true])
+            echo 'Published Unit Test HTML Report!'
+        }
+
+        stage('unitReportCoverage'){
+            echo 'Generating Unit Test Coverage Report...'
+            if (isUnix()){
+                sh './gradlew jacocoUnitReport'
+            }else{
+                bat './gradlew jacocoUnitReport'
+            }
+            echo 'Generated Unit Test Coverage Report and started Publishing...'
+            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/jacoco/jacocoUnitReport/html', reportFiles: 'index.html', reportName: 'UnitTests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
+            echo 'Published Unit Test Coverage Report!'    
         }
 
         stage('integrationReport'){
@@ -51,30 +66,6 @@ node{
             echo 'Published Integration Test Coverage Report!'    
         }
 
-        stage('unitReport'){
-            echo 'Running Unit Tests...'
-            if (isUnix()){
-                sh './gradlew unitTest'
-            }else{
-                bat './gradlew unitTest'
-            }
-            echo 'Generating Unit Test HTML Report and started Publishing...'
-            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/unit', reportFiles: 'index.html', reportName: 'UnitTests Report', reportTitles: '', useWrapperFileDirectly: true])
-            echo 'Published Unit Test HTML Report!'
-        }
-
-        stage('unitReportCoverage'){
-            echo 'Generating Unit Test Coverage Report...'
-            if (isUnix()){
-                sh './gradlew jacocoUnitReport'
-            }else{
-                bat './gradlew jacocoUnitReport'
-            }
-            echo 'Generated Unit Test Coverage Report and started Publishing...'
-            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/jacoco/jacocoUnitReport/html', reportFiles: 'index.html', reportName: 'UnitTests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
-            echo 'Published Unit Test Coverage Report!'    
-        }
-
         stage('mutationReportCoverage'){
             echo 'Generating Mutation Test Coverage Report...'
             if (isUnix()){
@@ -85,6 +76,15 @@ node{
             echo 'Generated Mutation Test Coverage Report and started Publishing...'
             publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/pitest', reportFiles: 'index.html', reportName: 'Mutation Tests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
             echo 'Published Mutation Test Coverage Report!'    
+        }
+
+        stage('javadoc'){
+            if (isUnix()){
+                sh './gradlew javadoc'
+            }else{
+                bat './gradlew javadoc'
+            }
+            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/javadoc/', reportFiles: 'index.html', reportName: 'Javadoc', reportTitles: '', useWrapperFileDirectly: true])
         }
 
         stage('staging'){
