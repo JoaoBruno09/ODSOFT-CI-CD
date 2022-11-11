@@ -110,34 +110,38 @@ node{
             }
         )
 
-        stage('systemTest'){
-            echo "Initiating Smoke Test"
-            if (isUnix()){
-                httpCode = sh( script: "curl -s -o /dev/null -w '%{http_code}' $url/crm", returnStdout: true ).trim()
-            }else{
-                httpCode = bat( script: "curl -s -o ./response -w '%%{http_code}' $url/crm", returnStdout: true).trim()
-                httpCode = httpCode.readLines().drop(1).join(" ")//windows returns full command plus the response, but the response is at a new line so we can drop the first line and remove spaces and we get only the http code    
+        parallel(
+            "systemTest":{
+                stage('systemTest'){
+                    echo "Initiating Smoke Test"
+                        if (isUnix()){
+                            httpCode = sh( script: "curl -s -o /dev/null -w '%{http_code}' $url/crm", returnStdout: true ).trim()
+                        }else{
+                            httpCode = bat( script: "curl -s -o ./response -w '%%{http_code}' $url/crm", returnStdout: true).trim()
+                            httpCode = httpCode.readLines().drop(1).join(" ")//windows returns full command plus the response, but the response is at a new line so we can drop the first line and remove spaces and we get only the http code    
+                        }
+                    //checking if the http code was ok(200) or found(302)
+                        if (httpCode == "200" || httpCode == "302"){
+                            echo 'The application is responding!'
+                        }else{
+                            currentBuild.result = 'ABORTED'
+                            error('The application is not responding...') 
+                        }  
+                }
+            },
+            "manualTests":{
+                stage('manualTest'){
+                    echo 'Sending email...'
+                    emailext body: "Greetings developer,\n I'm here to tell you that the application is up and running! Now you should manually test it to confirm if it meets your standarts\n The link is: $url/crm\n After that please proceed to manually confirm that you want to proceed or abort with the following link: $job_console \n This is an automated message from your Jenkins job.", subject: "Job Manual Test of Build#${env.BUILD_NUMBER}", to: "1220257@isep.ipp.pt"
+                    echo 'Waiting for manual confirmation...'
+                    userInput = input(id: 'userInput',    
+                            message: 'Have you manually tested the application?',    
+                            parameters: [
+                                [$class:'ChoiceParameterDefinition', choices: "Yes\nNo", name: 'Answer']
+                                    ])
+                }
             }
-            //checking if the http code was ok(200) or found(302)
-            if (httpCode == "200" || httpCode == "302"){
-                echo 'The application is responding!'
-            }else{
-                currentBuild.result = 'ABORTED'
-                error('The application is not responding...') 
-            }  
-        }
-
-        stage('manualTest'){
-            echo 'Sending email...'
-            emailext body: "Greetings developer,\n I'm here to tell you that the application is up and running! Now you should manually test it to confirm if it meets your standarts\n The link is: $url/crm\n After that please proceed to manually confirm that you want to proceed or abort with the following link: $job_console \n This is an automated message from your Jenkins job.", subject: "Job Manual Test of Build#${env.BUILD_NUMBER}", to: "1220257@isep.ipp.pt"
-            echo 'Waiting for manual confirmation...'
-            userInput = input(id: 'userInput',    
-                    message: 'Have you manually tested the application?',    
-                    parameters: [
-                        [$class:'ChoiceParameterDefinition', choices: "Yes\nNo", name: 'Answer']
-                            ]  
-            )
-        }
+        )
 
     }catch(error){
         echo "Something went wrong..."
