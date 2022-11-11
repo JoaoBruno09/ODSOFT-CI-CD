@@ -1,5 +1,5 @@
 //VARIABLES
-def url = "http://ec2-54-163-192-75.compute-1.amazonaws.com:8080"
+def url = "http://ec2-100-25-219-150.compute-1.amazonaws.com:8080"
 def job_console = "http://localhost:8081/job/${env.JOB_NAME}/${env.BUILD_NUMBER}/console"
 node{
     try{
@@ -10,9 +10,12 @@ node{
         stage('build'){
             if (isUnix()){
                 sh './gradlew clean build "-Pvaadin.productionMode" war'
+                sh "./gradlew copyArtifact"
             }else{
                 bat './gradlew clean build "-Pvaadin.productionMode" war'
+                bat "./gradlew copyArtifact"
             }
+            archiveArtifacts artifacts: 'flowcrmtutorial-0.0.1-SNAPSHOT.war', followSymlinks: false
         }
 
         stage('javadoc'){
@@ -86,11 +89,6 @@ node{
 
         stage('staging'){
             echo "Starting Staging Fase..."
-            if (isUnix()){
-                sh "./gradlew copyArtifact"
-            }else{
-                bat "./gradlew copyArtifact"
-            }
             echo "Deploying to environment..."
             deploy adapters: [tomcat9(credentialsId: "odsoft", path: "", url: "$url")], contextPath: "crm", war: "flowcrmtutorial-0.0.1-SNAPSHOT.war"
             echo "Stage deployed!"
