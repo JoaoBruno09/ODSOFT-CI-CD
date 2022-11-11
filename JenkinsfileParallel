@@ -21,55 +21,33 @@ node{
             }
             archiveArtifacts artifacts: 'flowcrmtutorial-0.0.1-SNAPSHOT.war', followSymlinks: false
         }
-        stage('javadoc'){
-            if (isUnix()){
-                sh './gradlew javadoc'
-            }else{
-                bat './gradlew javadoc'
-            }
-            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/javadoc/', reportFiles: 'index.html', reportName: 'Javadoc', reportTitles: '', useWrapperFileDirectly: true])
-        }
-        stage('integrationReport'){
-            echo 'Running Integration Tests...'
-            if (isUnix()){
-                sh './gradlew integrationTest'
-            }else{
-                bat './gradlew integrationTest'
-            }
-            echo 'Generating Integration Test HTML Report and started Publishing...'
-            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/integration', reportFiles: 'index.html', reportName: 'IntegrationTests Report', reportTitles: '', useWrapperFileDirectly: true])
-            echo 'Published Integration Test HTML Report!'
-        }
-        parallel(
-        "integrationReportCoverage": {
-            stage("integrationReportCoverage") {
-                echo 'Generating Integration Test Coverage Report...'
-                if (isUnix()){
-                    sh './gradlew jacocoIntegrationReport'
-                }else{
-                        bat './gradlew jacocoIntegrationReport'
-                }
-                echo 'Generated Integration Test Coverage Report and started Publishing...'
-                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/jacoco/jacocoIntegrationReport/html', reportFiles: 'index.html', reportName: 'IntegrationTests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
-                echo 'Published Integration Test Coverage Report!'    
-            }
-        },
-        "unitReport": {
-            stage("unitReport") {
-                echo 'Running Unit Tests...'
+
+        stage("unitReport") {
+            echo 'Running Unit Tests...'
                 if (isUnix()){
                     sh './gradlew unitTest'
                 }else{
                     bat './gradlew unitTest'
                 }
-                echo 'Generating Unit Test HTML Report and started Publishing...'
-                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/unit', reportFiles: 'index.html', reportName: 'UnitTests Report', reportTitles: '', useWrapperFileDirectly: true])
-                echo 'Published Unit Test HTML Report!'
-            }
+            echo 'Generating Unit Test HTML Report and started Publishing...'
+            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/unit', reportFiles: 'index.html', reportName: 'UnitTests Report', reportTitles: '', useWrapperFileDirectly: true])
+            echo 'Published Unit Test HTML Report!'
         }
-        )
 
         parallel(
+        "mutationReportCoverage": {
+            stage("mutationReportCoverage") {
+                echo 'Generating Mutation Test Coverage Report...'
+                    if (isUnix()){
+                        sh './gradlew pitest'
+                    }else{
+                        bat './gradlew pitest'
+                    }
+                echo 'Generated Mutation Test Coverage Report and started Publishing...'
+                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/pitest', reportFiles: 'index.html', reportName: 'Mutation Tests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
+                echo 'Published Mutation Test Coverage Report!'  
+            }
+        },
         "unitReportCoverage": {
             stage("unitReportCoverage") {
                 echo 'Generating Unit Test Coverage Report...'
@@ -83,27 +61,54 @@ node{
                 echo 'Published Unit Test Coverage Report!'    
             }
         },
-        "mutationReportCoverage": {
-            stage("mutationReportCoverage") {
-                echo 'Generating Mutation Test Coverage Report...'
+        "unitReportCoverage": {
+            stage('integrationReport'){
+                echo 'Running Integration Tests...'
                 if (isUnix()){
-                    sh './gradlew pitest'
+                    sh './gradlew integrationTest'
                 }else{
-                    bat './gradlew pitest'
+                    bat './gradlew integrationTest'
                 }
-                echo 'Generated Mutation Test Coverage Report and started Publishing...'
-                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/pitest', reportFiles: 'index.html', reportName: 'Mutation Tests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
-                echo 'Published Mutation Test Coverage Report!'  
+                echo 'Generating Integration Test HTML Report and started Publishing...'
+                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/integration', reportFiles: 'index.html', reportName: 'IntegrationTests Report', reportTitles: '', useWrapperFileDirectly: true])
+                echo 'Published Integration Test HTML Report!'
             }
         }
         )
 
-        stage('staging'){
-            echo "Starting Staging Fase..."
-            echo "Deploying to environment..."
-            deploy adapters: [tomcat9(credentialsId: "odsoft", path: "", url: "$url")], contextPath: "crm", war: "flowcrmtutorial-0.0.1-SNAPSHOT.war"
-            echo "Stage deployed!"
-        }
+        parallel(
+            "integrationReportCoverage": {
+                stage("integrationReportCoverage") {
+                    echo 'Generating Integration Test Coverage Report...'
+                        if (isUnix()){
+                            sh './gradlew jacocoIntegrationReport'
+                        }else{
+                                bat './gradlew jacocoIntegrationReport'
+                        }
+                    echo 'Generated Integration Test Coverage Report and started Publishing...'
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/jacoco/jacocoIntegrationReport/html', reportFiles: 'index.html', reportName: 'IntegrationTests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
+                    echo 'Published Integration Test Coverage Report!'    
+            }
+        },
+            "javadoc":{
+                stage('javadoc'){
+                    if (isUnix()){
+                        sh './gradlew javadoc'
+                    }else{
+                        bat './gradlew javadoc'
+                    }
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/javadoc/', reportFiles: 'index.html', reportName: 'Javadoc', reportTitles: '', useWrapperFileDirectly: true])
+                }
+            },
+            "staging":{
+                stage('staging'){
+                    echo "Starting Staging Fase..."
+                    echo "Deploying to environment..."
+                    deploy adapters: [tomcat9(credentialsId: "odsoft", path: "", url: "$url")], contextPath: "crm", war: "flowcrmtutorial-0.0.1-SNAPSHOT.war"
+                    echo "Stage deployed!"
+                }
+            }
+        )
 
         stage('systemTest'){
             echo "Initiating Smoke Test"
