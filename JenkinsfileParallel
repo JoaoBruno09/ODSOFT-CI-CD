@@ -1,5 +1,5 @@
 //VARIABLES
-def url = "http://ec2-54-164-50-7.compute-1.amazonaws.com:8080"
+def url = "http://ec2-54-159-35-124.compute-1.amazonaws.com:8080"
 def job_console = "http://localhost:8081/job/${env.JOB_NAME}/${env.BUILD_NUMBER}/console"
 node{
     try{
@@ -13,6 +13,21 @@ node{
             }else{
                 bat './gradlew clean build "-Pvaadin.productionMode" war'
             }
+
+            if (isUnix()){
+                sh "./gradlew copyArtifact"
+            }else{
+                bat "./gradlew copyArtifact"
+            }
+            archiveArtifacts artifacts: 'flowcrmtutorial-0.0.1-SNAPSHOT.war', followSymlinks: false
+        }
+        stage('javadoc'){
+            if (isUnix()){
+                sh './gradlew javadoc'
+            }else{
+                bat './gradlew javadoc'
+            }
+            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/javadoc/', reportFiles: 'index.html', reportName: 'Javadoc', reportTitles: '', useWrapperFileDirectly: true])
         }
         stage('integrationReport'){
             echo 'Running Integration Tests...'
@@ -85,11 +100,6 @@ node{
 
         stage('staging'){
             echo "Starting Staging Fase..."
-            if (isUnix()){
-                sh "./gradlew copyArtifact"
-            }else{
-                bat "./gradlew copyArtifact"
-            }
             echo "Deploying to environment..."
             deploy adapters: [tomcat9(credentialsId: "odsoft", path: "", url: "$url")], contextPath: "crm", war: "flowcrmtutorial-0.0.1-SNAPSHOT.war"
             echo "Stage deployed!"
