@@ -1,0 +1,141 @@
+//VARIABLES
+def url = "http://ec2-54-164-50-7.compute-1.amazonaws.com:8080"
+def job_console = "http://localhost:8081/job/${env.JOB_NAME}/${env.BUILD_NUMBER}/console"
+node{
+    try{
+        stage('checkout'){
+            checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'git@bitbucket.org:goncalo-pinho/testes.git']]])
+        }
+
+        stage('build'){
+            if (isUnix()){
+                sh './gradlew clean build "-Pvaadin.productionMode" war'
+            }else{
+                bat './gradlew clean build "-Pvaadin.productionMode" war'
+            }
+        }
+        stage('integrationReport'){
+            echo 'Running Integration Tests...'
+            if (isUnix()){
+                sh './gradlew integrationTest'
+            }else{
+                bat './gradlew integrationTest'
+            }
+            echo 'Generating Integration Test HTML Report and started Publishing...'
+            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/integration', reportFiles: 'index.html', reportName: 'IntegrationTests Report', reportTitles: '', useWrapperFileDirectly: true])
+            echo 'Published Integration Test HTML Report!'
+        }
+        parallel(
+        "integrationReportCoverage": {
+            stage("integrationReportCoverage") {
+                echo 'Generating Integration Test Coverage Report...'
+                if (isUnix()){
+                    sh './gradlew jacocoIntegrationReport'
+                }else{
+                        bat './gradlew jacocoIntegrationReport'
+                }
+                echo 'Generated Integration Test Coverage Report and started Publishing...'
+                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/jacoco/jacocoIntegrationReport/html', reportFiles: 'index.html', reportName: 'IntegrationTests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
+                echo 'Published Integration Test Coverage Report!'    
+            }
+        },
+        "unitReport": {
+            stage("unitReport") {
+                echo 'Running Unit Tests...'
+                if (isUnix()){
+                    sh './gradlew unitTest'
+                }else{
+                    bat './gradlew unitTest'
+                }
+                echo 'Generating Unit Test HTML Report and started Publishing...'
+                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/unit', reportFiles: 'index.html', reportName: 'UnitTests Report', reportTitles: '', useWrapperFileDirectly: true])
+                echo 'Published Unit Test HTML Report!'
+            }
+        }
+        )
+
+        parallel(
+        "unitReportCoverage": {
+            stage("unitReportCoverage") {
+                echo 'Generating Unit Test Coverage Report...'
+                if (isUnix()){
+                    sh './gradlew jacocoUnitReport'
+                }else{
+                    bat './gradlew jacocoUnitReport'
+                }
+                echo 'Generated Unit Test Coverage Report and started Publishing...'
+                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/jacoco/jacocoUnitReport/html', reportFiles: 'index.html', reportName: 'UnitTests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
+                echo 'Published Unit Test Coverage Report!'    
+            }
+        },
+        "mutationReportCoverage": {
+            stage("mutationReportCoverage") {
+                echo 'Generating Mutation Test Coverage Report...'
+                if (isUnix()){
+                    sh './gradlew pitest'
+                }else{
+                    bat './gradlew pitest'
+                }
+                echo 'Generated Mutation Test Coverage Report and started Publishing...'
+                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/pitest', reportFiles: 'index.html', reportName: 'Mutation Tests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
+                echo 'Published Mutation Test Coverage Report!'  
+            }
+        }
+        )
+
+        stage('staging'){
+            echo "Starting Staging Fase..."
+            if (isUnix()){
+                sh "./gradlew copyArtifact"
+            }else{
+                bat "./gradlew copyArtifact"
+            }
+            echo "Deploying to environment..."
+            deploy adapters: [tomcat9(credentialsId: "odsoft", path: "", url: "$url")], contextPath: "crm", war: "flowcrmtutorial-0.0.1-SNAPSHOT.war"
+            echo "Stage deployed!"
+        }
+
+        stage('systemTest'){
+            echo "Initiating Smoke Test"
+            if (isUnix()){
+                httpCode = sh( script: "curl -s -o /dev/null -w '%{http_code}' $url/crm", returnStdout: true ).trim()
+            }else{
+                httpCode = bat( script: "curl -s -o ./response -w '%%{http_code}' $url/crm", returnStdout: true).trim()
+                httpCode = httpCode.readLines().drop(1).join(" ")//windows returns full command plus the response, but the response is at a new line so we can drop the first line and remove spaces and we get only the http code    
+            }
+            //checking if the http code was ok(200) or found(302)
+            if (httpCode == "200" || httpCode == "302"){
+                echo 'The application is responding!'
+            }else{
+                currentBuild.result = 'ABORTED'
+                error('The application is not responding...') 
+            }  
+        }
+
+        stage('manualTest'){
+            echo 'Sending email...'
+            emailext body: "Greetings developer,\n I'm here to tell you that the application is up and running! Now you should manually test it to confirm if it meets your standarts\n The link is: $url/crm\n After that please proceed to manually confirm that you want to proceed or abort with the following link: $job_console \n This is an automated message from your Jenkins job.", subject: "Job Manual Test of Build#${env.BUILD_NUMBER}", to: "1220257@isep.ipp.pt"
+            echo 'Waiting for manual confirmation...'
+            userInput = input(id: 'userInput',    
+                    message: 'Have you manually tested the application?',    
+                    parameters: [
+                        [$class:'ChoiceParameterDefinition', choices: "Yes\nNo", name: 'Answer']
+                            ]  
+            )
+        }
+
+    }catch(error){
+        echo "Something went wrong..."
+        throw error
+    }finally{
+        echo 'Continuous Integration Feedback'
+        if (isUnix()) {
+            sh "git tag -a Build#${env.BUILD_NUMBER}-${currentBuild.currentResult} -m \"Tag generated in jenkins job\""
+            sh "git push git@bitbucket.org:goncalo-pinho/testes.git --tags"
+        }else{
+            bat "git tag -a Build#${env.BUILD_NUMBER}-${currentBuild.currentResult} -m \"Tag generated in jenkins job\""
+            bat "git push git@bitbucket.org:goncalo-pinho/testes.git --tags"
+        }
+    }
+    
+}
