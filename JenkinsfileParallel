@@ -10,13 +10,9 @@ node{
         stage('build'){
             if (isUnix()){
                 sh './gradlew clean build "-Pvaadin.productionMode" war'
-            }else{
-                bat './gradlew clean build "-Pvaadin.productionMode" war'
-            }
-
-            if (isUnix()){
                 sh "./gradlew copyArtifact"
             }else{
+                bat './gradlew clean build "-Pvaadin.productionMode" war'
                 bat "./gradlew copyArtifact"
             }
             archiveArtifacts artifacts: 'flowcrmtutorial-0.0.1-SNAPSHOT.war', followSymlinks: false
@@ -109,7 +105,7 @@ node{
                 }
             }
         )
-        
+
         stage('systemTest'){
             echo "Initiating Smoke Test"
             if (isUnix()){
