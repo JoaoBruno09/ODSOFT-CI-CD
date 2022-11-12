@@ -91,7 +91,7 @@ tasks.register('copyArtifact', Copy) {
 }
 ```
 
-To publish we had to add this code snippet ```archiveArtifacts artifacts: 'flowcrmtutorial-0.0.1-SNAPSHOT.war', followSymlinks: false``` that we indicate the artifact path and it will be published on the job front page. 
+To publish we had to add this code snippet `archiveArtifacts artifacts: 'flowcrmtutorial-0.0.1-SNAPSHOT.war', followSymlinks: false` that we indicate the artifact path and it will be published on the job front page.
 
 - [x] **3º Task - Generate and publish javadoc**
 
@@ -408,16 +408,16 @@ HTML Coverage Report on Jenkins'.
 
 - [x] **Mutation Tests Execution**
 
-For this stage, we created and executed mutation test to add to the project our path where it will be our HTML report adding the following plugin to the 'plugins': 
+For this stage, we created and executed mutation test to add to the project our path where it will be our HTML report adding the following plugin to the 'plugins':
 
 id 'info.solidsoft.pitest' version '1.7.4'
 
 In our task with the name of 'pitest' we need to contain the version of 'junit plugin' and a command called 'timestampedReports' for our file don't come with datatime format.
 
-```groovy
+````groovy
 
 pitest  {
-	
+
 	junit5PluginVersion = '0.15'
 	timestampedReports = false
 
@@ -438,45 +438,45 @@ stage('mutationReportCoverage'){
         }
         echo 'Generated Mutation Test Coverage Report and started Publishing...'
         publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/pitest', reportFiles: 'index.html', reportName: 'Mutation Tests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
-        echo 'Published Mutation Test Coverage Report!'    
+        echo 'Published Mutation Test Coverage Report!'
 }
 
-```
+````
 
 This command allows Jenkins to find the report, in the mentioned directory `build/reports/pitest` and look for the `index.html`. Then, Jenkins generate a report named Mutation Tests Coverage Report.
 
-
-
 ## Pipeline Stage(5/5)
+
 1220257 - Gonçalo Pinho was responsible for this pipeline stages.
 
- - [x] **1º Staging Deployment**
-For this stage we thought about two possible options:
- - Simulate the production environment on a docker container;
- - Create a instance on a cloud service and prepare it like it is the production environment.
+- [x] **1º Staging Deployment**
+      For this stage we thought about two possible options:
+- Simulate the production environment on a docker container;
+- Create a instance on a cloud service and prepare it like it is the production environment.
 
 We picked the creation of the instance on a cloud service (Amazon Web Sevices), created a EC2 Instance with Ubuntu 22.04 and Apache Tomcat version 9.
 
- For this stage we based ourselves on the following tutorials:
- 
- - To prepare the environment we followed [this guide](https://medium.com/@hasnat.saeed/install-tomcat-9-on-ubuntu-18-04-605ca963ffcc).
- - To deploy the .war file from Jenkins to the server we followed [this video tutorial](https://www.youtube.com/watch?v=YbaPlDpV184).
+For this stage we based ourselves on the following tutorials:
+
+- To prepare the environment we followed [this guide](https://medium.com/@hasnat.saeed/install-tomcat-9-on-ubuntu-18-04-605ca963ffcc).
+- To deploy the .war file from Jenkins to the server we followed [this video tutorial](https://www.youtube.com/watch?v=YbaPlDpV184).
 
 Summing up both of the guides, we installed:
 
- - [Java 17](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
- - [Apache Tomcat Version](https://tomcat.apache.org)
+- [Java 17](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
+- [Apache Tomcat Version](https://tomcat.apache.org)
 
 The key point of make things possible to deploy the project from Jenkins to the EC2 instance was configuring AWS EC2 security group and creating a tomcat user that is able to deploy by script.
 
 By default the Tomcat port is 8080, and we are keeping it but, its important to know it to configure the EC2 Instance security group.
 
-After configuring the security group we can try to access the tomcat with your ec2 Public IPv4 DNS:8080, for example: ```http://ec2-3-85-104-7.compute-1.amazonaws.com:8080/```
+After configuring the security group we can try to access the tomcat with your ec2 Public IPv4 DNS:8080, for example: `http://ec2-3-85-104-7.compute-1.amazonaws.com:8080/`
 
-After that you should create a tomcat user with ``admin-script`` ``manager-script`` ``admin-gui`` ``manager-script`` 
+After that you should create a tomcat user with `admin-script` `manager-script` `admin-gui` `manager-script`
 
-Your should edit the file on this directory ``tomcat/conf/tomcat-users.xml``.
+Your should edit the file on this directory `tomcat/conf/tomcat-users.xml`.
 And add this and edit the username and password for something of your choice:
+
 ```xml
 <role rolename="admin-gui"/>
 <role rolename="admin-script"/>
@@ -487,28 +487,31 @@ And add this and edit the username and password for something of your choice:
 
 And now you can deploy manually or via script, on this case with Jenkins.
 
-Before the deploy we recommend you to encrease the max upload file since the .war file that is generated by the project is bigger than the default value (50MB). For that you should go to the following directory: ``/tomcat/webapps/manager/WEB-INF/web.xml``
+Before the deploy we recommend you to encrease the max upload file since the .war file that is generated by the project is bigger than the default value (50MB). For that you should go to the following directory: `/tomcat/webapps/manager/WEB-INF/web.xml`
 
 And change the max file size and request size for this:
+
 ```xml
 <max-file-size>104857600</max-file-size>
 <max-request-size>104857600</max-request-size>
 ```
+
 After that we can jump to the Jenkins configuration of the credentials.
 
 In there we want to store the tomcat username and password and the most important part is defining a id for a dynamic approach when using the jenkinsfile in multiple computers.
 
 To deploy we used the plugin [Deploy to Container].(https://plugins.jenkins.io/deploy/)
 
-One more time we use the jenkins pipeline syntax to generate your code, we select the sample step ``deploy:Deploy war/ear to container`` and in there we indicate:
+One more time we use the jenkins pipeline syntax to generate your code, we select the sample step `deploy:Deploy war/ear to container` and in there we indicate:
 
- - The war file path;
- - The context path (this is the "/path" that you will put in front of your URL)
- - The container you are using (this case Tomcat 9)
- - The credentials (that we configured before)
- - The tomcat url (```http://ec2-3-85-104-7.compute-1.amazonaws.com:8080/```) 
+- The war file path;
+- The context path (this is the "/path" that you will put in front of your URL)
+- The container you are using (this case Tomcat 9)
+- The credentials (that we configured before)
+- The tomcat url (`http://ec2-3-85-104-7.compute-1.amazonaws.com:8080/`)
 
 And generate the snippet:
+
 ```groovy
 deploy adapters: [tomcat9(credentialsId: "odsoft", path: "", url: "http://ec2-3-85-104-7.compute-1.amazonaws.com:8080/")], contextPath: "crm", war: "flowcrmtutorial-0.0.1-SNAPSHOT.war"
 ```
@@ -517,7 +520,8 @@ Well, at this point we had the everything ready, ran the job in jenkins and then
 
 Then we reached to the conclusion that to deploy the .war file we had to do some more things, so we searched in springboot docs and found [this documentation](https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/html/howto-traditional-deployment.html) about deploying.
 
- Long story short, we had to extend our Application with the ``SpringBootServletInitializer`` abstract classs and override the following method:
+Long story short, we had to extend our Application with the `SpringBootServletInitializer` abstract classs and override the following method:
+
 ```java
 @Override
 protected  SpringApplicationBuilder  configure(SpringApplicationBuilder  application) {
@@ -525,10 +529,10 @@ protected  SpringApplicationBuilder  configure(SpringApplicationBuilder  applica
 }
 ```
 
-After that, the deploy was successful and we could open our beautiful application through the ec2 tomcat link + /crm, something like this: ``http://ec2-3-85-104-7.compute-1.amazonaws.com:8080/crm ``!
+After that, the deploy was successful and we could open our beautiful application through the ec2 tomcat link + /crm, something like this: `http://ec2-3-85-104-7.compute-1.amazonaws.com:8080/crm `!
 
- - [x] **2º - System Test**
-For the system test we will perform a automatic smoke test that will be checking if the base URL of the application is responsive after staging the deployment.
+- [x] **2º - System Test**
+      For the system test we will perform a automatic smoke test that will be checking if the base URL of the application is responsive after staging the deployment.
 
 For that we used the command line tool curl, that stands for client url, that is normally used for transfering data using various network protocols.
 
@@ -536,13 +540,12 @@ We could have just print all the headers of the server response and that contain
 And depending on the operating system that the job is running, we had to make some changes.
 **For Linux**
 For linux we used the following command:
-```curl -s -o /dev/null -w '%{http_code}' $url/crm```
-Where ``$url`` is the variable that holds the url that you want to get the http code.
+`curl -s -o /dev/null -w '%{http_code}' $url/crm`
+Where `$url` is the variable that holds the url that you want to get the http code.
 
 **For Windows**
 For windows we used the following command
-```curl -s -o ./response -w '%%{http_code}' $url/crm"```
-
+`curl -s -o ./response -w '%%{http_code}' $url/crm"`
 
 Knowing the commands we just created a way to store the result and create a condition to verify is the response was positive and we could proceed or negative and we throw an error and abort the build.
 
@@ -565,18 +568,19 @@ stage('systemTest'){
 }
 ```
 
- - [x] **3º - UI Manual Acceptance Test**
+- [x] **3º - UI Manual Acceptance Test**
 
 For this stage we used [Sendinblue](https://www.sendinblue.com), but you can use the SMTP server of your choice, but you can follow the steps that we did.
 
 First of all, we need a Jenkins plugin so that we can send emails through the Jenkinsfile, and for that we used [Email Extension](https://plugins.jenkins.io/email-ext/).
 
-After installing the plugin, to configure it, we click on ``Manage Jenkins > Configure System`` and scroll down to ``Extended E-mail Notification``.  We indicate the SMTP server and the SMTP port and then click on ``Advanced`` and create credentials with the SMTP credentials that you have.
+After installing the plugin, to configure it, we click on `Manage Jenkins > Configure System` and scroll down to `Extended E-mail Notification`. We indicate the SMTP server and the SMTP port and then click on `Advanced` and create credentials with the SMTP credentials that you have.
 
 Note: If you authenticate via SMTP Authentication do not select any of the below checkboxes!
 
-Finishing the configuration part, we opened the snippet generator with the  sample step ``emailtext: Extended Email``. 
+Finishing the configuration part, we opened the snippet generator with the sample step `emailtext: Extended Email`.
 We just used the field to indicate the reciever and the message and generated the following script:
+
 ```groovy
 emailext body: "Greetings developer,\n I'm here to tell you that the application is up and running! Now you should manually test it to confirm if it meets your standarts\n The link is: http://ec2-3-85-104-7.compute-1.amazonaws.com:8080/crm\n After that please proceed to manually confirm that you want to proceed or abort with the following link: http://localhost:8081/job/${env.JOB_NAME}/${env.BUILD_NUMBER}/console"  \n This is an automated message from your Jenkins job.", subject: "Job Manual Test of Build#${env.BUILD_NUMBER}", to: "1220257@isep.ipp.pt"
 ```
@@ -595,7 +599,7 @@ This input, will pause the build until the user inputs the parameters and clicks
 
 In case you click "Proceed", it will continue the pipeline, otherwise will abort it.
 
- - [x] **Continuous Integration Feedback**
+- [x] **Continuous Integration Feedback**
 
 On this last task, we had to tag the last commit that was running on the job with the build number and the build result.
 
@@ -605,10 +609,9 @@ Since on this first part of the assignment we are restricted to the use of scrip
 
 After some research the best solution was wrapping all the stages with a try/catch/finally statement and on the finally push the tag to the repository.
 
-
-
 Resulting on the following stage on the Jenkinsfile:
-``` groovy
+
+```groovy
 try{
 //code
 }catch(error){
@@ -628,6 +631,426 @@ try{
 
 That way the tag will be pushed independently of the pipeline result and last commit of the repository get associated with a tag with the following aspect #BUILD_NUMBER-BUILD_RESULT.
 
+## Pipelines
+
+**Recapping all stages:**
+
+- **checkout** - In the first execution, this stage will get the git
+  repository. Other executions will only get the updates from that
+  repository.
+- **build** - builds the project and handles the artifacts, generating and
+  publishing them.
+- **unitReports**- runs all the unit tests and generates a junit report,
+  publishing in the pipeline.
+  **unitReportCoverage** - generates and publishes the unit test coverage report.
+- **integrationReport** - runs the integration tests, generates junit
+  report and publishes it.
+- **integrationReportCoverage** - generates integration coverage report and
+  publishes it.
+- **mutationReportCoverage** - run mutation tests, generates coverage
+  report and publishes it.
+- **javadoc** - generates javadoc and publishes it staging - publishes the
+  project on a staging environment.
+- **systemTest** - Runs a smoke test.
+- **manualTest** - Sends an email to the user, notifying about the success
+  of the deployment and asking for a manual test for the application  
+  and requires a manual confirmation on the job console to continue the
+  build.
+
+Inside a finally statement there's the continuous integration feedback that tags the repository with the build number and the build result.
+
+- [x] **Sequential pipeline analysis**
+      Before we were building the pipeline as we developed the project requirements, now we stopped to think about the sequence of the stages that made more sense for us. Resulting on the following pipeline code:
+
+```groovy
+//VARIABLES
+def  url = "http://ec2-18-205-25-143.compute-1.amazonaws.com:8080"
+def  job_console = "http://localhost:8081/job/${env.JOB_NAME}/${env.BUILD_NUMBER}/console"
+
+node{
+try{
+stage('checkout'){
+	checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'git@bitbucket.org:mei-isep/odsoft-22-23-ncf-g202.git']]])
+}
+
+stage('build'){
+	if (isUnix()){
+		sh './gradlew clean build "-Pvaadin.productionMode" war'
+		sh "./gradlew copyArtifact"
+	}else{
+		bat './gradlew clean build "-Pvaadin.productionMode" war'
+		bat "./gradlew copyArtifact"
+	}
+	archiveArtifacts artifacts: 'flowcrmtutorial-0.0.1-SNAPSHOT.war', followSymlinks: false
+
+}
+
+
+stage('unitReport'){
+	echo 'Running Unit Tests...'
+	if (isUnix()){
+		sh './gradlew unitTest'
+	}else{
+		bat './gradlew unitTest'
+	}
+	echo 'Generating Unit Test HTML Report and started Publishing...'
+
+	publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/unit', reportFiles: 'index.html', reportName: 'UnitTests Report', reportTitles: '', useWrapperFileDirectly: true])
+
+echo 'Published Unit Test HTML Report!'
+
+}
+
+stage('unitReportCoverage'){
+	echo 'Generating Unit Test Coverage Report...'
+	if (isUnix()){
+		sh './gradlew jacocoUnitReport'
+	}else{
+		bat './gradlew jacocoUnitReport'
+	}
+	echo 'Generated Unit Test Coverage Report and started Publishing...'
+	publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/jacoco/jacocoUnitReport/html', reportFiles: 'index.html', reportName: 'UnitTests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
+	echo 'Published Unit Test Coverage Report!'
+
+}
+
+stage('integrationReport'){
+	echo 'Running Integration Tests...'
+	if (isUnix()){
+		sh './gradlew integrationTest'
+	}else{
+		bat './gradlew integrationTest'
+}
+	echo 'Generating Integration Test HTML Report and started Publishing...'
+	publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/integration', reportFiles: 'index.html', reportName: 'IntegrationTests Report', reportTitles: '', useWrapperFileDirectly: true])
+	echo 'Published Integration Test HTML Report!'
+}
+
+stage('integrationReportCoverage'){
+	echo 'Generating Integration Test Coverage Report...'
+	if (isUnix()){
+		sh './gradlew jacocoIntegrationReport'
+	}else{
+		bat './gradlew jacocoIntegrationReport'
+	}
+	echo 'Generated Integration Test Coverage Report and started Publishing...'
+	publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/jacoco/jacocoIntegrationReport/html', reportFiles: 'index.html', reportName: 'IntegrationTests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
+	echo 'Published Integration Test Coverage Report!'
+}
+
+stage('mutationReportCoverage'){
+	echo 'Generating Mutation Test Coverage Report...'
+	if (isUnix()){
+		sh './gradlew pitest'
+	}else{
+		bat './gradlew pitest'
+	}
+	echo 'Generated Mutation Test Coverage Report and started Publishing...'
+	publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/pitest', reportFiles: 'index.html', reportName: 'Mutation Tests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
+	echo 'Published Mutation Test Coverage Report!'
+}
+
+stage('javadoc'){
+	if (isUnix()){
+		sh './gradlew javadoc'
+	}else{
+		bat './gradlew javadoc'
+	}
+	publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/javadoc/', reportFiles: 'index.html', reportName: 'Javadoc', reportTitles: '', useWrapperFileDirectly: true])
+}
+
+stage('staging'){
+	echo "Starting Staging Fase..."
+	echo "Deploying to environment..."
+	deploy adapters: [tomcat9(credentialsId: "odsoft", path: "", url: "$url")], contextPath: "crm", war: "flowcrmtutorial-0.0.1-SNAPSHOT.war"
+	echo "Stage deployed!"
+
+}
+
+stage('systemTest'){
+	echo "Initiating Smoke Test"
+	if (isUnix()){
+		httpCode = sh( script: "curl -s -o /dev/null -w '%{http_code}' $url/crm", returnStdout: true ).trim()
+	}else{
+		httpCode = bat( script: "curl -s -o ./response -w %%{http_code} $url/crm", returnStdout: true).trim()
+		httpCode = httpCode.readLines().drop(1).join(" ")//windows returns full command plus the response, but the response is at a new line so we can drop the first line and remove spaces and we get only the http code
+	}
+
+	//checking if the http code was ok(200) or found(302)
+	if (httpCode == "200" || httpCode == "302"){
+		echo 'The application is responding!'
+	}else{
+		currentBuild.result = 'ABORTED'
+		error('The application is not responding...')
+	}
+}
+
+stage('manualTest'){
+echo 'Sending email...'
+emailext body: "Greetings developer,\n I'm here to tell you that the application is up and running! Now you should manually test it to confirm if it meets your standarts\n The link is: $url/crm\n After that please proceed to manually confirm that you want to proceed or abort with the following link: $job_console  \n This is an automated message from your Jenkins job.", subject: "Job Manual Test of Build#${env.BUILD_NUMBER}", to: "1220257@isep.ipp.pt"
+echo 'Waiting for manual confirmation...'
+userInput = input(id: 'userInput',
+message: 'Have you manually tested the application?',
+parameters: [
+[$class:'ChoiceParameterDefinition', choices: "Yes\nNo", name: 'Answer']
+])
+}
+}catch(error){
+	echo "Something went wrong..."
+	throw error
+}finally{
+	echo 'Continuous Integration Feedback'
+if (isUnix()) {
+	sh "git tag -a Build#${env.BUILD_NUMBER}-${currentBuild.currentResult} -m \"Tag generated in jenkins job\""
+	sh "git push git@bitbucket.org:mei-isep/odsoft-22-23-ncf-g202.git --tags"
+}else{
+	bat "git tag -a Build#${env.BUILD_NUMBER}-${currentBuild.currentResult} -m \"Tag generated in jenkins job\""
+	bat "git push git@bitbucket.org:mei-isep/odsoft-22-23-ncf-g202.git --tags"
+}
+}
+}
+```
+
+For a clear view of how the sequential pipeline was designed we created the following diagram:
+![Sequential pipeline diagram](https://i.imgur.com/AQ9A7C5.jpg)
+The logic of this pipeline implementation was in running in a sequence the stages that depend on eachother.
+As we can see we ran the unit tests, then we generated and publish the coverage report, we ran the integration tests and generated the coverage report, and so forth.
+
+Having the pipeline created we made a three runs so that we could make some analysis.
+![Sequential pipeline runs](https://i.imgur.com/cS6EdL0.png)
+Analysign the run as a whole we can see that:
+
+- Run A took 1 minute and 39 seconds (99s);
+- Run B took 1 minute and 40 seconds (100s);
+- Run C took 1 minute and 47 seconds (107s);
+
+The average time to run the sequential pipeline is approximately 1 minute and 42 seconds.
+
+Analysis stage by stage:
+
+- The **checkout** stage the average run time is 1 seconds;
+- The **build** stage the average run time is 20 seconds;
+- The **unitReport** stage average run time is 4 seconds;
+- The **unitReportCoverage** average run time is 2 seconds;
+- The **integrationReport** average runtime is 7 seconds;
+- The **integrationReportCoverage** average run time is 7 seconds;
+- The **mutationReportCoverage** average run time is 37 seconds;
+- The **javadoc** average run time is 3 seconds;
+- The **staging** average run time is 24 seconds;
+- The **systemTest** average run time is 406 milliseconds;
+- The **manualTest** average run time is 849 milliseconds.
+
+The task that took more time to run was the mutationReportCoverage.
+
+- [x] **Parallel pipeline analysis**
+      We followed the same logic as the sequential pipeline, we stoped for a while and thought about the stages and their dependencies and implemented the pipeline that we can see on the following code:
+
+```groovy
+//VARIABLES
+def  url = "http://ec2-18-205-25-143.compute-1.amazonaws.com:8080"
+def  job_console = "http://localhost:8081/job/${env.JOB_NAME}/${env.BUILD_NUMBER}/console"
+node{
+try{
+stage('checkout'){
+	checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'git@bitbucket.org:mei-isep/odsoft-22-23-ncf-g202.git']]])
+}
+
+stage('build'){
+	if (isUnix()){
+		sh './gradlew clean build "-Pvaadin.productionMode" war'
+		sh "./gradlew copyArtifact"
+	}else{
+		bat './gradlew clean build "-Pvaadin.productionMode" war'
+		bat "./gradlew copyArtifact"
+	}
+	archiveArtifacts artifacts: 'flowcrmtutorial-0.0.1-SNAPSHOT.war', followSymlinks: false
+}
+
+stage("unitReport") {
+	echo 'Running Unit Tests...'
+	if (isUnix()){
+		sh './gradlew unitTest'
+	}else{
+		bat './gradlew unitTest'
+	}
+	echo 'Generating Unit Test HTML Report and started Publishing...'
+	publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/unit', reportFiles: 'index.html', reportName: 'UnitTests Report', reportTitles: '', useWrapperFileDirectly: true])
+	echo 'Published Unit Test HTML Report!'
+}
+parallel(
+"mutationReportCoverage": {
+	stage("mutationReportCoverage") {
+		echo 'Generating Mutation Test Coverage Report...'
+		if (isUnix()){
+			sh './gradlew pitest'
+		}else{
+			bat './gradlew pitest'
+		}
+		echo 'Generated Mutation Test Coverage Report and started Publishing...'
+		publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/pitest', reportFiles: 'index.html', reportName: 'Mutation Tests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
+		echo 'Published Mutation Test Coverage Report!'
+	}
+},
+"unitReportCoverage": {
+	stage("unitReportCoverage") {
+		echo 'Generating Unit Test Coverage Report...'
+		if (isUnix()){
+			sh './gradlew jacocoUnitReport'
+		}else{
+			bat './gradlew jacocoUnitReport'
+		}
+		echo 'Generated Unit Test Coverage Report and started Publishing...'
+		publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/jacoco/jacocoUnitReport/html', reportFiles: 'index.html', reportName: 'UnitTests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
+		echo 'Published Unit Test Coverage Report!'
+	}
+},
+
+"integrationReport": {
+	stage('integrationReport'){
+		echo 'Running Integration Tests...'
+		if (isUnix()){
+			sh './gradlew integrationTest'
+		}else{
+			bat './gradlew integrationTest'
+		}
+		echo 'Generating Integration Test HTML Report and started Publishing...'
+		publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/integration', reportFiles: 'index.html', reportName: 'IntegrationTests Report', reportTitles: '', useWrapperFileDirectly: true])
+		echo 'Published Integration Test HTML Report!'
+	}
+})
+
+parallel(
+"integrationReportCoverage": {
+	stage("integrationReportCoverage") {
+		echo 'Generating Integration Test Coverage Report...'
+		if (isUnix()){
+			sh './gradlew jacocoIntegrationReport'
+		}else{
+			bat './gradlew jacocoIntegrationReport'
+		}
+		echo 'Generated Integration Test Coverage Report and started Publishing...'
+		publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/jacoco/jacocoIntegrationReport/html', reportFiles: 'index.html', reportName: 'IntegrationTests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
+		echo 'Published Integration Test Coverage Report!'
+	}
+},
+
+"javadoc":{
+	stage('javadoc'){
+	if (isUnix()){
+		sh './gradlew javadoc'
+	}else{
+		bat './gradlew javadoc'
+	}
+	publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/javadoc/', reportFiles: 'index.html', reportName: 'Javadoc', reportTitles: '', useWrapperFileDirectly: true])
+	}
+},
+"staging":{
+	stage('staging'){
+		echo "Starting Staging Fase..."
+		echo "Deploying to environment..."
+		deploy adapters: [tomcat9(credentialsId: "odsoft", path: "", url: "$url")], contextPath: "crm", war: "flowcrmtutorial-0.0.1-SNAPSHOT.war"
+		echo "Stage deployed!"
+	}
+})
+
+stage('systemTest'){
+	echo "Initiating Smoke Test"
+	if (isUnix()){
+		httpCode = sh( script: "curl -s -o /dev/null -w '%{http_code}' $url/crm", returnStdout: true ).trim()
+	}else{
+		httpCode = bat( script: "curl -s -o ./response -w %%{http_code} $url/crm", returnStdout: true).trim()
+		httpCode = httpCode.readLines().drop(1).join(" ")//windows returns full command plus the response, but the response is at a new line so we can drop the first line and remove spaces and we get only the http code
+	}
+	//checking if the http code was ok(200) or found(302)
+	if (httpCode == "200" || httpCode == "302"){
+		echo 'The application is responding!'
+	}else{
+		currentBuild.result = 'ABORTED'
+		error('The application is not responding...')
+	}
+}
+
+stage('manualTest'){
+	echo 'Sending email...'
+	emailext body: "Greetings developer,\n I'm here to tell you that the application is up and running! Now you should manually test it to confirm if it meets your standarts\n The link is: $url/crm\n After that please proceed to manually confirm that you want to proceed or abort with the following link: $job_console  \n This is an automated message from your Jenkins job.", subject: "Job Manual Test of Build#${env.BUILD_NUMBER}", to: "1220257@isep.ipp.pt"
+	echo 'Waiting for manual confirmation...'
+	userInput = input(id: 'userInput',
+	message: 'Have you manually tested the application?',
+	parameters: [
+	[$class:'ChoiceParameterDefinition', choices: "Yes\nNo", name: 'Answer']
+	])
+}
+}catch(error){
+	echo "Something went wrong..."
+	throw error
+}finally{
+	echo 'Continuous Integration Feedback'
+	if (isUnix()) {
+		sh "git tag -a Build#${env.BUILD_NUMBER}-${currentBuild.currentResult} -m \"Tag generated in jenkins job\""
+		sh "git push git@bitbucket.org:mei-isep/odsoft-22-23-ncf-g202.git --tags"
+	}else{
+		bat "git tag -a Build#${env.BUILD_NUMBER}-${currentBuild.currentResult} -m \"Tag generated in jenkins job\""
+		bat "git push git@bitbucket.org:mei-isep/odsoft-22-23-ncf-g202.git --tags"
+	}
+}
+}
+```
+
+For a clear view of the parallel pipeline implementation we made the following diagram:
+![Parallel pipeline design](https://i.imgur.com/vnmb91U.jpg)
+
+We choose the stage mutationReportCoverage, unitReportCoverage and integrationReport to run in parallel because they have no dependencies between them and we thought we could "save" time by starting to run these three stages at the same time. As we can see after the first parallel we have another, because the last parallel generated stuff that was needed to run these other tasks so we stoped the parallel there to make sure we have the stuff that is needed for the other stages.
+The other parallel, runs the integrationReportCoverage, javadoc and staging stages since they have no dependencies between them and we thought again that we could save time.
+
+On the following image we can see three runs of the parallel pipeline.
+![Parallel pipeline runs](https://i.imgur.com/vWmqZy6.png)
+
+Full build analysis:
+
+- Run A took 145 seconds (2 minutes and 25 seconds)
+- Run B took 143 seconds (2 minutes and 23 seconds)
+- Run C took 131 seconds (2 minutes and 11 seconds)
+
+Average full build time is 140 seconds (2 minutes and 20 seconds)
+
+Stage analysis:
+
+- The **checkout** stage average run time is 1 second;
+- The **build** stage average run time is 21 seconds;
+- The **unitReport** stage average run time is 4 seconds;
+- The **mutationReportCoverage** stage average run time is 48 seconds;
+- The **unitReportCoverage** stage average run time is 11 seconds;
+- The **integrationReport** stage average run time is 4 seconds;
+- The **integrationReportCoverage** stage average run is 4 seconds;
+- The **javadoc** stage average run time is 5 seconds;
+- The **staging** stage average run time is 26 seconds;
+- The **systemTest** stage average run time is 401 milliseconds
+- The **manualTest** stage average run time is 799 milliseconds
+
+The mutationReportCoverage was, again, the task that took more time to run.
+
+## Pipeline analysis comparison
+
+Comparing the stages run time we can conclude:
+**Both** pipelines average run time are equal in the following stages:
+
+- checkout
+- unitReport
+
+The **sequential** pipeline is faster on the following stages:
+
+- build
+- unitReportCoverage
+- mutationReportCovarage
+- javadoc
+- staging
+
+The **parallel** pipeline is faster on the following stages:
+
+- unitReportCoverage
+- systemTest
+- ManualTest
+
+Comparing the average full build time, the sequential pipeline is better by almost 40 seconds.
+
 \*\*
-
-
