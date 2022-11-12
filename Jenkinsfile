@@ -99,7 +99,7 @@ node{
             if (isUnix()){
                 httpCode = sh( script: "curl -s -o /dev/null -w '%{http_code}' $url/crm", returnStdout: true ).trim()
             }else{
-                httpCode = bat( script: "curl -s -o ./response -w '%%{http_code}' $url/crm", returnStdout: true).trim()
+                httpCode = bat( script: "curl -s -o ./response -w %%{http_code} $url/crm", returnStdout: true).trim()
                 httpCode = httpCode.readLines().drop(1).join(" ")//windows returns full command plus the response, but the response is at a new line so we can drop the first line and remove spaces and we get only the http code    
             }
             //checking if the http code was ok(200) or found(302)
