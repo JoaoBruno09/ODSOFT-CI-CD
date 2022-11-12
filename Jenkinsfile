@@ -129,10 +129,10 @@ node{
         echo 'Continuous Integration Feedback'
         if (isUnix()) {
             sh "git tag -a Build#${env.BUILD_NUMBER}-${currentBuild.currentResult} -m \"Tag generated in jenkins job\""
-            sh "git push git@bitbucket.org:goncalo-pinho/vaadin-crm-baseline-students-1220257.git --tags"
+            sh "git push git@bitbucket.org:mei-isep/odsoft-22-23-ncf-g202.git --tags"
         }else{
             bat "git tag -a Build#${env.BUILD_NUMBER}-${currentBuild.currentResult} -m \"Tag generated in jenkins job\""
-            bat "git push git@bitbucket.org:goncalo-pinho/vaadin-crm-baseline-students-1220257.git --tags"
+            bat "git push git@bitbucket.org:mei-isep/odsoft-22-23-ncf-g202.git --tags"
         }
     }
 }
