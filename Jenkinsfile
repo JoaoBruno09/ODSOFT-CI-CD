@@ -124,6 +124,7 @@ node{
         }
     }catch(error){
         echo "Something went wrong..."
+        currentBuild.result = 'FAILURE'
         throw error
     }finally{
         echo 'Continuous Integration Feedback'
