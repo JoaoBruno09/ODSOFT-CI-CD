@@ -69,7 +69,8 @@ pipeline{
                             recordIssues(enabledForFailure:  true,  aggregatingResults:  false,
                             tools:  [
                                 java (reportEncoding:  'UTF-8'),
-                                checkStyle(pattern:  '**/checkstyle/main.xml',  reportEncoding:  'UTF-8')],
+                                checkStyle(pattern:  '**/checkstyle/main.xml',  reportEncoding:  'UTF-8'),
+                                spotBugs(pattern:  '**/spotbugs/main.xml',  reportEncoding:  'UTF-8')],
                             )
                         }
                     }
