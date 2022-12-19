@@ -1512,10 +1512,51 @@ stage("Check"){
 				java (reportEncoding:  'UTF-8'),
 				checkStyle(pattern:  '**/checkstyle/main.xml',  reportEncoding:  'UTF-8')
 				spotBugs(pattern:  '**/spotbugs/main.xml',  reportEncoding:  'UTF-8')],
+            )
 		}
 	}
 }
 ```
+
+- [x] **QualityGates and Build Health**
+
+This task is responsible to check the build health of the application and to calculate if the build of the application should continue or fail.
+
+To achieve this task, was used the [Warnings Next Generation Plugin](https://www.jenkins.io/doc/pipeline/steps/warnings-ng/) to calculate the total of issues and to see if the app is healthier or not and if the build should continue or not.
+
+In the jenkinsfile, was implemented the thresholds in the stage Check after the Checkstyle and Spotbugs report their issues.
+
+```groovy
+stage("Check"){
+	steps {
+		script{
+			try{
+				if (isUnix()){
+					sh './gradlew check'
+				}else{
+					bat './gradlew check'
+				}
+			}catch (error){
+				currentBuild.result =  'FAILURE'
+				throw error
+			}
+			recordIssues(enabledForFailure:  true,  aggregatingResults:  false,
+			tools:  [
+				java (reportEncoding:  'UTF-8'),
+				checkStyle(pattern:  '**/checkstyle/main.xml',  reportEncoding:  'UTF-8')
+				spotBugs(pattern:  '**/spotbugs/main.xml',  reportEncoding:  'UTF-8')],
+				healthy:  10,  unhealthy:  400,
+				qualityGates:  [[threshold:  20,  type:  'TOTAL',  unstable:  true],  [threshold:  400,  type:  'TOTAL',  unstable:  false]]
+            )
+		}
+	}
+}
+```
+
+If the app has less or equal 10 issues, so the app is 100% healthier, if has more or equal 400 issues the app is considered 0% healthier.
+If the app has less or equal 20 issues, so the app is unstable, if has more or equal 400 the build should fail.
+
+We defined 400 as maximum threshold because the purpose of this, is that the build can continue.
 
 ## 2.6 Continuous Deployment
 
