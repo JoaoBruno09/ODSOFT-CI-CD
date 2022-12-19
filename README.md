@@ -1326,6 +1326,44 @@ But we will see on the Continuous Deployment part that we applied the volumes in
 
 All of this information was found in [docker documentation](https://docs.docker.com/storage/).
 
+**Generate a PDF out of a Markdown file**
+
+To generate a PDF out of a Markdown file we used the [fntsoftware plugin](https://plugins.gradle.org/plugin/de.fntsoftware.gradle.markdown-to-pdf)
+On the build.gradle file we applied the plugin in the plugins section with the folloing code line:
+
+    id "de.fntsoftware.gradle.markdown-to-pdf" version "1.1.0"
+
+Since `MarkdownToPdfTask` is a class, and because it is not in the Gradle namespace (it's from a 3rd party plugin) it needs to be qualified, otherwise, Gradle thinks it is a property and for that we add the following import to the top of the build.gradle file:
+
+    import de.fntsoftware.gradle.MarkdownToPdfTask
+
+After we are all set with the plugin we need to create the task that looks like this:
+```groovy
+// Generate pdf file out of a markdown file  
+task pdfConverter(type: MarkdownToPdfTask){  
+  inputFile = 'README.md' //The markdown file you want to convert  
+  outputFile = 'README.pdf' //the name of the pdf file you want to get  
+}
+```
+
+Just by telling the location of the md file and where we want the output after running the command with `./gradlew pdfConverter` the markdown file will be converted to pdf.
+
+To the pipeline we just added this small stage:
+```groovy
+stage('ConvertMDtoPDF'){  
+    steps{  
+        script{  
+            if (isUnix()){  
+                sh './gradlew pdfConverter'  
+            }else{  
+                bat './gradlew pdfConverter'  
+            }  
+        }  
+    }  
+}
+```
+
+
 ## 2.6 Continuous Deployment
 The student, Gonçalo Pinho-1220257 was the one in charge of the documentation and database.
 
