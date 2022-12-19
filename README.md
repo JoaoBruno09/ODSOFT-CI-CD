@@ -1305,9 +1305,8 @@ This was the result of the conversion of the previous scripted pipeline to decla
 
 From now, the elements of the group will develop their tasks.
 
-
-
 ## **2.2 Documentation and database **
+
 The student, Gonçalo Pinho-1220257 was the one in charge of the documentation and database.
 
 **Database persistence:**
@@ -1338,92 +1337,179 @@ Since `MarkdownToPdfTask` is a class, and because it is not in the Gradle namesp
     import de.fntsoftware.gradle.MarkdownToPdfTask
 
 After we are all set with the plugin we need to create the task that looks like this:
+
 ```groovy
-// Generate pdf file out of a markdown file  
-task pdfConverter(type: MarkdownToPdfTask){  
-  inputFile = 'README.md' //The markdown file you want to convert  
-  outputFile = 'README.pdf' //the name of the pdf file you want to get  
+// Generate pdf file out of a markdown file
+task pdfConverter(type: MarkdownToPdfTask){
+  inputFile = 'README.md' //The markdown file you want to convert
+  outputFile = 'README.pdf' //the name of the pdf file you want to get
 }
 ```
 
 Just by telling the location of the md file and where we want the output after running the command with `./gradlew pdfConverter` the markdown file will be converted to pdf.
 
 To the pipeline we just added this small stage:
+
 ```groovy
-stage('ConvertMDtoPDF'){  
-    steps{  
-        script{  
-            if (isUnix()){  
-                sh './gradlew pdfConverter'  
-            }else{  
-                bat './gradlew pdfConverter'  
-            }  
-        }  
-    }  
+stage('ConvertMDtoPDF'){
+    steps{
+        script{
+            if (isUnix()){
+                sh './gradlew pdfConverter'
+            }else{
+                bat './gradlew pdfConverter'
+            }
+        }
+    }
 }
 ```
 
+## 2.3 Code Quality and Integration Tests
+
+1220256 João Rocha was responsible for this task
+
+- [x] **Checkstyle**
+
+[Checkstyle](https://checkstyle.sourceforge.io/) is a tool that verifies if the code was written follows the specified encoding rules.
+
+Firstly, was chosen whose modules and its properties of Checkstyle should be use to check the code:
+
+```java
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE  module PUBLIC"-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+"https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module  name="Checker">
+	<property  name="localeLanguage"  value="en" />  <!-- Defines the language of the checks -->
+	<property  name="severity"  value="warning" />  <!-- Defines the type of checks in Checker-->
+	<module  name="LineLength">  <!-- Checks for long lines -->
+		<property  name="max"  value="120"/>
+	</module>
+	<module  name="TreeWalker">
+		<property  name="severity"  value="warning" />  <!-- Defines the type of checks in TreeWalker-->
+	<module  name="MissingOverride"/>  <!-- Verifies that the @Override annotation is present when the @inheritDoc javadoc tag is present.-->
+	<module  name="MagicNumber"/>  <!--Checks that there are no "magic numbers" where a magic number is a numeric literal that is not defined as a constant.-->
+	<module  name="AvoidStarImport"/>  <!--Checks that there are no import statements that use the * notation.-->
+	<module  name="IllegalImport"/>  <!-- Checks for imports from a set of illegal packages.-->
+	<module  name="EmptyBlock"/>  <!-- Checks for empty blocks.-->
+	<module  name="JavadocMethod"/>  <!--Checks the Javadoc of a method or constructor.-->
+	<module  name="BooleanExpressionComplexity">  <!--Restricts the number of boolean operators (&&, ||, &, | and ^) in an expression.-->
+		<property  name="max"  value="5"/>
+	</module>
+	<module  name="NoCodeInFile"/>  <!--Checks whether file contains code-->
+	<module  name="LocalFinalVariableName"/>  <!--Checks that local final variable names conform to a specified pattern.-->
+	<module  name="MethodLength"/>  <!-- Checks for long methods and constructors DEFAULT IS 150 -->
+	<module  name="EmptyBlock"/>  <!--Checks for empty blocks-->
+	<module  name="FinalLocalVariable"/>  <!--Checks that local variables that never have their values changed are declared final.-->
+	<module  name="FinalParameters"/><!--Checks that parameters for methods, constructors, catch and for-each blocks are final.-->
+	</module>
+</module>
+```
+
+To apply the Checkstyle to this project, was added the plugin checkstyle into build.gradle, as it is shown below
+
+```java
+plugins {
+id  'checkstyle'
+}
+```
+
+To run Checkstyle in the pipeline was needed to add a new stage in the pipeline named "Check" which will run the check task.
+
+The check task will run the checkstyleMain and checkstyleTest pre-defined tasks.
+
+Furthermore, to publish the analysis results, was used the [Warnings Next Generation Plugin](https://www.jenkins.io/doc/pipeline/steps/warnings-ng/) to publish the issues on Jenkins, with the recordIssues.
+
+The implementation for this is shown below.
+
+```groovy
+stage("Check"){
+	steps {
+		script{
+			try{
+				if (isUnix()){
+					sh './gradlew check'
+				}else{
+					bat './gradlew check'
+				}
+			}catch (error){
+				currentBuild.result =  'FAILURE'
+				throw error
+			}
+			recordIssues(enabledForFailure:  true,  aggregatingResults:  false,
+			tools:  [
+				java (reportEncoding:  'UTF-8'),
+				checkStyle(pattern:  '**/checkstyle/main.xml',  reportEncoding:  'UTF-8')],
+			)
+		}
+	}
+}
+```
 
 ## 2.6 Continuous Deployment
+
 The student, Gonçalo Pinho-1220257 was the one in charge of the documentation and database.
 
-**
+\*\*
 
 On this part of the assignment we were supposed to simulate a production environment with docker and deploy the project there.
 The persistence layer that we talked about in the point 2.2, is going to be applied on the production environment because it doesn't make sense to persist data on the staging environment.
 
 Since docker has the ability to define and run multi-container docker applications we also used a docker-compose.yml file to define the two services that will run at the same time. It's the same logic as the staging environment but with the difference that it persists the data of the database.
+
 ```yml
-version: '3.1'  
-services:  
-  app:  
-    container_name: vaadin-crm  
-    image: odsoft-image  
-    build: ./  
-    ports:  
-      - "8082:8080"  
-  environment:  
-      - DB_HOST=postgresqlcrm  
-      - DB_PORT=5432  
-    depends_on:  
-      - postgresqlcrm  
-  postgresqlcrm:  
-    container_name: postgresqlcrm  
-    image: postgres  
-    ports:  
-      - "5433:5432"  
-  environment:  
-      - POSTGRES_PASSWORD=12345  
-      - POSTGRES_USER=postgres  
-      - POSTGRES_DB=odsoft  
-    volumes:  
-      - "odsoft_data:/var/lib/postgresql/data"  
-volumes:  
+version: '3.1'
+services:
+  app:
+    container_name: vaadin-crm
+    image: odsoft-image
+    build: ./
+    ports:
+      - "8082:8080"
+  environment:
+      - DB_HOST=postgresqlcrm
+      - DB_PORT=5432
+    depends_on:
+      - postgresqlcrm
+  postgresqlcrm:
+    container_name: postgresqlcrm
+    image: postgres
+    ports:
+      - "5433:5432"
+  environment:
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=odsoft
+    volumes:
+      - "odsoft_data:/var/lib/postgresql/data"
+volumes:
   odsoft_data:
 ```
-As we can see we have two services the``app``and the ``postgresqlcrm`` the app will use our previously built docker image, and we will be able to access the project though the port 8082. Since we need to change databases we configured the application.properties to be able to connect to the database via environment variables, as we can see we have two of them, the DB_HOST and DB_PORT. There's something we need to be careful while creating multi-containers that one depends on another like on this case.When you want to access something that is inside other container you need to use the name of that container as the IP like we can see on the previous docker-compose.
+
+As we can see we have two services the`app`and the `postgresqlcrm` the app will use our previously built docker image, and we will be able to access the project though the port 8082. Since we need to change databases we configured the application.properties to be able to connect to the database via environment variables, as we can see we have two of them, the DB_HOST and DB_PORT. There's something we need to be careful while creating multi-containers that one depends on another like on this case.When you want to access something that is inside other container you need to use the name of that container as the IP like we can see on the previous docker-compose.
 
 All of this information was found in [docker compose documentation](https://docs.docker.com/compose/compose-file/)
 
 To run this file on the pipeline we used the following stage:
+
 ```groovy
-stage("DeployProd"){  
-    steps {  
-        script{  
-            try{  
-                if (isUnix()){  
-                    sh 'docker-compose -f docker-compose-staging.yml down'  
-                    sh 'docker-compose up -d'  
-                }else{  
-                    bat 'docker-compose -f docker-compose-staging.yml down'  
-                    bat 'docker-compose up -d'  
-                }  
-            }catch (error){  
-                currentBuild.result = 'FAILURE'  
-  throw error  
-            }  
-        }  
-    }  
+stage("DeployProd"){
+    steps {
+        script{
+            try{
+                if (isUnix()){
+                    sh 'docker-compose -f docker-compose-staging.yml down'
+                    sh 'docker-compose up -d'
+                }else{
+                    bat 'docker-compose -f docker-compose-staging.yml down'
+                    bat 'docker-compose up -d'
+                }
+            }catch (error){
+                currentBuild.result = 'FAILURE'
+  throw error
+            }
+        }
+    }
 }
 ```
 
@@ -1432,29 +1518,29 @@ As we can see on the code snipped, first, we shutdown the docker-compose-staging
 After the environment is up, we perform a smoke test:
 
 ```groovy
-stage('SmoketestProd'){  
-    steps{  
-        script{  
-            try{  
-                if (isUnix()){  
-                    httpCode = sh( script: "curl -s -o /dev/null -w '%{http_code}' $url/login", returnStdout: true ).trim()  
-                    echo httpCode  
-                }else{  
-                    httpCode = bat( script: "curl -s -o ./response -w %%{http_code} $url/login", returnStdout: true).trim()  
-                    httpCode = httpCode.readLines().drop(1).join(" ")//windows returns full command plus the response, but the response is at a new line so we can drop the first line and remove spaces and we get only the http code  
-                }  
-                //checking if the http code was ok(200) or found(302)  
-  if (httpCode == "200" || httpCode == "302"){  
-                    echo 'The application is responding!'  
-                }else{  
-                    currentBuild.result = 'FAILURE'  
-  error('The application is not responding...')  
-                }  
-            }catch(error){  
-                currentBuild.result = 'FAILURE'  
-  throw error  
-            }  
-        }  
-    }  
+stage('SmoketestProd'){
+    steps{
+        script{
+            try{
+                if (isUnix()){
+                    httpCode = sh( script: "curl -s -o /dev/null -w '%{http_code}' $url/login", returnStdout: true ).trim()
+                    echo httpCode
+                }else{
+                    httpCode = bat( script: "curl -s -o ./response -w %%{http_code} $url/login", returnStdout: true).trim()
+                    httpCode = httpCode.readLines().drop(1).join(" ")//windows returns full command plus the response, but the response is at a new line so we can drop the first line and remove spaces and we get only the http code
+                }
+                //checking if the http code was ok(200) or found(302)
+  if (httpCode == "200" || httpCode == "302"){
+                    echo 'The application is responding!'
+                }else{
+                    currentBuild.result = 'FAILURE'
+  error('The application is not responding...')
+                }
+            }catch(error){
+                currentBuild.result = 'FAILURE'
+  throw error
+            }
+        }
+    }
 }
 ```
