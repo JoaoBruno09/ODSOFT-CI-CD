@@ -151,6 +151,18 @@ task jacocoIntegrationReport(type: org.gradle.testing.jacoco.tasks.JacocoReport)
     }   
 }
 
+// Task that verifies integration coverage reports, in this case the minimum of coverage should be 0.2
+jacocoTestCoverageVerification {
+	getExecutionData().setFrom("build/jacoco/integrationTest.exec")
+	violationRules {
+		rule {
+			limit {
+				minimum  =  0.2
+			}
+		}
+	}
+}
+
 //Task that runs unit tests
 task unitTest(type: Test) {
     useJUnitPlatform() // use JUnit framework
