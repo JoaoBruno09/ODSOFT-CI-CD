@@ -1414,9 +1414,9 @@ id  'checkstyle'
 }
 ```
 
-To run Checkstyle in the pipeline was needed to add a new stage in the pipeline named "Check" which will run the check task.
+To run Checkstyle in the pipeline was needed to add a new stage in the pipeline named "Check" which will run the 'check' task.
 
-The check task will run the checkstyleMain and checkstyleTest pre-defined tasks.
+The 'check' task will run the checkstyleMain and checkstyleTest pre-defined tasks.
 
 Furthermore, to publish the analysis results, was used the [Warnings Next Generation Plugin](https://www.jenkins.io/doc/pipeline/steps/warnings-ng/) to publish the issues on Jenkins, with the recordIssues.
 
