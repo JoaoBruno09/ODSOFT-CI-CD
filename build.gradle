@@ -93,6 +93,7 @@ pitest {
 
     junit5PluginVersion = '0.15'
     timestampedReports = false
+    pitest.excludedTestClasses = ['com.example.application.views.list.*IT'] //Excludint integrationTests
 
 }
 
@@ -101,7 +102,7 @@ pitest {
 // for more configuration options please see: https://vaadin.com/docs/latest/guide/start/gradle/#all-options
 vaadin {
     pnpmEnable = false //false triggers more performance during development
-    productionMode = true
+    //productionMode = true
 }
 
 war {
@@ -157,7 +158,7 @@ jacocoTestCoverageVerification {
 	violationRules {
 		rule {
 			limit {
-				minimum  =  0.2
+				minimum  =  0.9
 			}
 		}
 	}
