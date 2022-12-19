@@ -1558,6 +1558,50 @@ If the app has less or equal 20 issues, so the app is unstable, if has more or e
 
 We defined 400 as maximum threshold because the purpose of this, is that the build can continue.
 
+- [x] **Integration Tests Coverage Build Health**
+
+The purpose of this task is to verify the minimum build health of the integration tests coverage.
+
+For this, was developed the following task into build.gradle.
+```java
+jacocoTestCoverageVerification {
+	getExecutionData().setFrom("build/jacoco/integrationTest.exec")
+	violationRules {
+		rule {
+			limit {
+				minimum  =  0.2
+			}
+		}
+	}
+}
+```
+For the pipeline, in the integrationTest stage just was necessary to call the task which was created previously, jacocoTestCoverageVerification, as it is shown below: 
+```groovy
+stage("integrationTest"){
+	steps{
+		script{
+			try{
+				if (isUnix()){
+					sh './gradlew integrationTest'
+					sh './gradlew jacocoIntegrationReport'
+					sh './gradlew jacocoTestCoverageVerification'
+				}else{
+					bat './gradlew integrationTest'
+					bat './gradlew jacocoIntegrationReport'
+					bat './gradlew jacocoTestCoverageVerification'
+				}
+				publishHTML([allowMissing:  false,  alwaysLinkToLastBuild:  false,  keepAll:  false,  reportDir:  'build/htmlReports/junitReports/integration',  reportFiles:  'index.html',  reportName:  'IntegrationTests Report',  reportTitles:  '',  useWrapperFileDirectly:  true])
+				publishHTML([allowMissing:  false,  alwaysLinkToLastBuild:  false,  keepAll:  false,  reportDir:  'build/reports/jacoco/jacocoIntegrationReport/html',  reportFiles:  'index.html',  reportName:  'IntegrationTests Coverage Report',  reportTitles:  '',  useWrapperFileDirectly:  true])
+			}catch (error){
+				currentBuild.result =  'FAILURE'
+				throw error
+			}
+		}
+	}
+}
+```
+If the Integration Test Coverage has less than 0.2 of coverage than the build should fail, so for this we chose 0.2 as a minimum of coverage so that the build can continue.
+
 ## 2.6 Continuous Deployment
 
 The student, Gonçalo Pinho-1220257 was the one in charge of the documentation and database.
