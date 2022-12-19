@@ -17,6 +17,7 @@ plugins {
     id 'info.solidsoft.pitest' version '1.7.4'
     id "de.fntsoftware.gradle.markdown-to-pdf" version "1.1.0"
     id 'checkstyle'
+    id  "com.github.spotbugs"  version  "5.0.13"
 }
 
 defaultTasks("clean", "build")
@@ -71,6 +72,9 @@ dependencies {
 
     //database
     implementation 'org.postgresql:postgresql:42.5.1'
+
+    //load class "org.slf4j.impl.StaticLoggerBinder" for sportBugsc can work
+    spotbugsSlf4j  "org.slf4j:slf4j-simple:1.7.30"
 
 }
 
@@ -197,4 +201,23 @@ task renameDeployFile(type: Copy) {
 task pdfConverter(type: MarkdownToPdfTask){
     inputFile = 'README.md' //The markdown file you want to convert
     outputFile = 'README.pdf' //the name of the pdf file you want to get
+}
+
+//Task that runs spotbugs
+spotbugs {
+	ignoreFailures  =  true
+	toolVersion  =  '4.7.3'
+	reportsDir  =  file("$buildDir/reports/spotbugs")
+}
+
+spotbugsMain {
+	reports {
+		xml.enabled  =  true
+	}
+}
+
+spotbugsTest {
+	reports {
+		xml.enabled  =  true
+	}
 }
