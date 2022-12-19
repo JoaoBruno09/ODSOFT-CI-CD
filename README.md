@@ -1446,6 +1446,77 @@ stage("Check"){
 }
 ```
 
+- [x] **SpotBugs**
+
+[SpotBugs](https://spotbugs.github.io/) is a tool for static analysis to look for bugs in Java code.
+
+To apply the SpotBugs to this project, was added the plugin com.github.spotbugs into build.gradle and some settings, as it is shown below:
+
+```java
+plugins {
+id  "com.github.spotbugs"  version  "5.0.13"
+}
+
+//Task that runs spotbugs
+spotbugs {
+	ignoreFailures  =  true
+	toolVersion  =  '4.7.3'
+	reportsDir  =  file("$buildDir/reports/spotbugs")
+}
+
+spotbugsMain {
+	reports {
+		xml.enabled  =  true
+	}
+}
+
+spotbugsTest {
+	reports {
+		xml.enabled  =  true
+	}
+}
+```
+
+When tried to run spotBugs was given an error "Failed to load class "org.slf4j.impl.StaticLoggerBinder", so to fix this was added the spotbugsSlf4j to the dependencies of the project.
+
+```java
+dependencies {
+	spotbugsSlf4j  "org.slf4j:slf4j-simple:1.7.30"
+}
+```
+
+To run SpotBugs in the pipeline was needed to add a tool in the stage "Check" that was created also for the Checkstyle plugin, which will run the 'check' task which uses both plugins.
+
+From now on, the 'check' task will run the checkstyleMain, checkstyleTest, spotbugsMain and spotbugsTest.
+
+Furthermore, to publish the analysis results, was used the [Warnings Next Generation Plugin](https://www.jenkins.io/doc/pipeline/steps/warnings-ng/) to publish the issues on Jenkins.
+
+The implementation for this is shown below.
+
+```groovy
+stage("Check"){
+	steps {
+		script{
+			try{
+				if (isUnix()){
+					sh './gradlew check'
+				}else{
+					bat './gradlew check'
+				}
+			}catch (error){
+				currentBuild.result =  'FAILURE'
+				throw error
+			}
+			recordIssues(enabledForFailure:  true,  aggregatingResults:  false,
+			tools:  [
+				java (reportEncoding:  'UTF-8'),
+				checkStyle(pattern:  '**/checkstyle/main.xml',  reportEncoding:  'UTF-8')
+				spotBugs(pattern:  '**/spotbugs/main.xml',  reportEncoding:  'UTF-8')],
+		}
+	}
+}
+```
+
 ## 2.6 Continuous Deployment
 
 The student, Gonçalo Pinho-1220257 was the one in charge of the documentation and database.
