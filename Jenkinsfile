@@ -212,6 +212,17 @@ pipeline{
                         }
                     }
                 }
+                stage('ConvertMDtoPDF'){
+                    steps{
+                        script{
+                            if (isUnix()){
+                                sh './gradlew pdfConverter'
+                            }else{
+                                bat './gradlew pdfConverter'
+                            }
+                        }
+                    }
+                }
             }
             //END OF PARALLEL
         }
