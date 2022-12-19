@@ -185,9 +185,11 @@ pipeline{
                         if (isUnix()){
                             sh './gradlew integrationTest'
                             sh './gradlew jacocoIntegrationReport'
+                            sh './gradlew jacocoTestCoverageVerification'
                         }else{
                             bat './gradlew integrationTest'
                             bat './gradlew jacocoIntegrationReport'
+                            bat './gradlew jacocoTestCoverageVerification'
                         }
                         publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/integration', reportFiles: 'index.html', reportName: 'IntegrationTests Report', reportTitles: '', useWrapperFileDirectly: true])
                         publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/jacoco/jacocoIntegrationReport/html', reportFiles: 'index.html', reportName: 'IntegrationTests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
