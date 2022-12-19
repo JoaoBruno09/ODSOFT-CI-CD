@@ -71,6 +71,8 @@ pipeline{
                                 java (reportEncoding:  'UTF-8'),
                                 checkStyle(pattern:  '**/checkstyle/main.xml',  reportEncoding:  'UTF-8'),
                                 spotBugs(pattern:  '**/spotbugs/main.xml',  reportEncoding:  'UTF-8')],
+                            healthy:  10,  unhealthy:  400,
+				            qualityGates:  [[threshold:  20,  type:  'TOTAL',  unstable:  true],  [threshold:  400,  type:  'TOTAL',  unstable:  false]]    
                             )
                         }
                     }
