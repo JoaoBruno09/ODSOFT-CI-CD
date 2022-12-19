@@ -16,6 +16,7 @@ plugins {
     id 'jacoco'
     id 'info.solidsoft.pitest' version '1.7.4'
     id "de.fntsoftware.gradle.markdown-to-pdf" version "1.1.0"
+    id 'checkstyle'
 }
 
 defaultTasks("clean", "build")
