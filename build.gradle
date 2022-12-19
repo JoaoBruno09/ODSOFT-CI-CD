@@ -1,3 +1,4 @@
+import de.fntsoftware.gradle.MarkdownToPdfTask
 buildscript {
     repositories {
         mavenCentral()
@@ -14,6 +15,7 @@ plugins {
     id 'war'
     id 'jacoco'
     id 'info.solidsoft.pitest' version '1.7.4'
+    id "de.fntsoftware.gradle.markdown-to-pdf" version "1.1.0"
 }
 
 defaultTasks("clean", "build")
@@ -188,4 +190,10 @@ task renameDeployFile(type: Copy) {
     include('flowcrmtutorial-0.0.1-SNAPSHOT.war') //specifying the file name
     destinationDir file('build/libs/') //indicationg the destination of the renamed file
     rename 'flowcrmtutorial-0.0.1-SNAPSHOT.war', 'ROOT.war'; //renaming file
+}
+
+// Generate pdf file out of a markdown file
+task pdfConverter(type: MarkdownToPdfTask){
+    inputFile = 'README.md' //The markdown file you want to convert
+    outputFile = 'README.pdf' //the name of the pdf file you want to get
 }
