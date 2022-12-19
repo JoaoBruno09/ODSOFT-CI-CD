@@ -1,5 +1,7 @@
 package com.example.application.views;
 
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import com.example.application.security.SecurityService;
 import com.example.application.views.list.ListView;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -22,15 +24,13 @@ public class MainLayout extends AppLayout {
         createDrawer();
     }
 
-
     private void createHeader() {
         H1 logo = new H1("Vaadin CRM");
         logo.addClassNames("text-l", "m-m");
 
         Button logout = new Button("Log out", e -> securityService.logout());
 
-        HorizontalLayout header =
-                new HorizontalLayout(new DrawerToggle(), logo, logout);
+        HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo, logout);
 
         header.setDefaultVerticalComponentAlignment(
                 FlexComponent.Alignment.CENTER);
@@ -46,7 +46,15 @@ public class MainLayout extends AppLayout {
         RouterLink listLink = new RouterLink("List", ListView.class);
         listLink.setHighlightCondition(HighlightConditions.sameLocation());
 
+        org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            addToDrawer(new VerticalLayout(listLink,
+                    new RouterLink("Customers", AdminCustomerView.class)));
+        }
+
         addToDrawer(new VerticalLayout(listLink,
                 new RouterLink("Dashboard", DashboardView.class)));
+
     }
 }
