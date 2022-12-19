@@ -53,6 +53,27 @@ pipeline{
         stage("Parallel 1"){
             parallel{
             //START OF PARALLEL 1
+                stage("Check"){
+                    steps {
+                        script{
+                            try{
+                                if (isUnix()){
+                                    sh './gradlew check'
+                                }else{
+                                    bat './gradlew check'
+                                }
+                            }catch (error){
+                                currentBuild.result =  'FAILURE'
+                                throw error
+                            }
+                            recordIssues(enabledForFailure:  true,  aggregatingResults:  false,
+                            tools:  [
+                                java (reportEncoding:  'UTF-8'),
+                                checkStyle(pattern:  '**/checkstyle/main.xml',  reportEncoding:  'UTF-8')],
+                            )
+                        }
+                    }
+                }
                 stage("InitializingStagingEnv"){ //put in parallel with mutation and unit tests
                     steps{
                         script{
