@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC
+  "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+  "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+  <property name="localeLanguage" value="en" /> <!-- Defines the language of the checks -->
+  <property name="severity" value="warning" /> <!-- Defines the type of checks in Checker-->
+  <module name="LineLength"> <!-- Checks for long lines -->
+    <property name="max" value="120"/>
+  </module>
+  <module name="TreeWalker">
+    <property name="severity" value="warning" /> <!-- Defines the type of checks in TreeWalker-->
+    <module name="MissingOverride"/> <!-- Verifies that the @Override annotation is present when the @inheritDoc javadoc tag is present.-->
+    <module name="MagicNumber"/> <!--Checks that there are no "magic numbers" where a magic number is a numeric literal that is not defined as a constant.-->
+    <module name="AvoidStarImport"/> <!--Checks that there are no import statements that use the * notation.-->
+    <module name="IllegalImport"/> <!-- Checks for imports from a set of illegal packages.-->
+    <module name="EmptyBlock"/> <!-- Checks for empty blocks.-->
+    <module name="JavadocMethod"/> <!--Checks the Javadoc of a method or constructor.-->
+    <module name="BooleanExpressionComplexity"> <!--Restricts the number of boolean operators (&&, ||, &, | and ^) in an expression.-->
+      <property name="max" value="5"/>
+    </module>
+    <module name="NoCodeInFile"/> <!--Checks whether file contains code-->
+    <module name="LocalFinalVariableName"/> <!--Checks that local final variable names conform to a specified pattern.-->
+    <module name="MethodLength"/> <!-- 	Checks for long methods and constructors DEFAULT IS 150 -->
+    <module name="EmptyBlock"/> <!--Checks for empty blocks-->
+    <module name="FinalLocalVariable"/> <!--Checks that local variables that never have their values changed are declared final.-->
+    <module name="FinalParameters"/><!--Checks that parameters for methods, constructors, catch and for-each blocks are final.-->
+  </module>
+</module>
