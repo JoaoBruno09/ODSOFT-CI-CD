@@ -12,7 +12,7 @@ public class CustomerFormTest {
     @BeforeEach
     public void setupData() {
         customer = new Customer();
-        customer.setName("José");
+        customer.setName("Jose");
         customer.setAddress("Rua das Rosinhas");
     }
 
@@ -20,7 +20,7 @@ public class CustomerFormTest {
     public void formFieldsPopulated() {
         CustomerForm form = new CustomerForm();
         form.setCustomer(customer);
-        assertEquals("José", form.name.getValue());
+        assertEquals("Jose", form.name.getValue());
         assertEquals("Rua das Rosinhas", form.address.getValue());
     }
 }
