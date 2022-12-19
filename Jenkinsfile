@@ -154,23 +154,40 @@ pipeline{
                 }
             }
         }
-
-        stage("Parallel 2"){
+        stage("integrationTest"){
+            steps{
+                script{
+                    try{
+                        if (isUnix()){
+                            sh './gradlew integrationTest'
+                            sh './gradlew jacocoIntegrationReport'
+                        }else{
+                            bat './gradlew integrationTest'
+                            bat './gradlew jacocoIntegrationReport'
+                        }
+                        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/integration', reportFiles: 'index.html', reportName: 'IntegrationTests Report', reportTitles: '', useWrapperFileDirectly: true])
+                        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/jacoco/jacocoIntegrationReport/html', reportFiles: 'index.html', reportName: 'IntegrationTests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
+                    }catch (error){
+                        currentBuild.result = 'FAILURE'
+                        throw error
+                    }
+                }
+            }
+        }
+        stage('Parallel'){
             parallel{
-                //START OF PARALLEL 2
-                stage("integrationTest"){
-                    steps{
+            //START OF PARALLEL
+                stage("DeployProd"){
+                    steps {
                         script{
                             try{
                                 if (isUnix()){
-                                    sh './gradlew integrationTest'
-                                    sh './gradlew jacocoIntegrationReport'
+                                    sh 'docker-compose -f docker-compose-staging.yml down'
+                                    sh 'docker-compose up -d'
                                 }else{
-                                    bat './gradlew integrationTest'
-                                    bat './gradlew jacocoIntegrationReport'
+                                    bat 'docker-compose -f docker-compose-staging.yml down'
+                                    bat 'docker-compose up -d'
                                 }
-                                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/integration', reportFiles: 'index.html', reportName: 'IntegrationTests Report', reportTitles: '', useWrapperFileDirectly: true])
-                                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/jacoco/jacocoIntegrationReport/html', reportFiles: 'index.html', reportName: 'IntegrationTests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
                             }catch (error){
                                 currentBuild.result = 'FAILURE'
                                 throw error
@@ -178,20 +195,45 @@ pipeline{
                         }
                     }
                 }
-                //END OF PARALLEL 2
+                stage("Javadoc"){
+                    steps{
+                        script{
+                            try{
+                                if (isUnix()){
+                                    sh "./gradlew javadoc"
+                                }else{
+                                    bat "./gradlew javadoc"
+                                }
+                                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/javadoc/', reportFiles: 'index.html', reportName: 'Javadoc', reportTitles: '', useWrapperFileDirectly: true])
+                            }catch (error){
+                                currentBuild.result = 'FAILURE'
+                                throw error
+                            }
+                        }
+                    }
+                }
             }
+            //END OF PARALLEL
         }
-        stage("Javadoc"){
+        stage('SmoketestProd'){
             steps{
                 script{
                     try{
                         if (isUnix()){
-                            sh "./gradlew javadoc"
+                            httpCode = sh( script: "curl -s -o /dev/null -w '%{http_code}' $url/login", returnStdout: true ).trim()
+                            echo httpCode
                         }else{
-                            bat "./gradlew javadoc"
+                            httpCode = bat( script: "curl -s -o ./response -w %%{http_code} $url/login", returnStdout: true).trim()
+                            httpCode = httpCode.readLines().drop(1).join(" ")//windows returns full command plus the response, but the response is at a new line so we can drop the first line and remove spaces and we get only the http code
                         }
-                        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/javadoc/', reportFiles: 'index.html', reportName: 'Javadoc', reportTitles: '', useWrapperFileDirectly: true])
-                    }catch (error){
+                        //checking if the http code was ok(200) or found(302)
+                        if (httpCode == "200" || httpCode == "302"){
+                            echo 'The application is responding!'
+                        }else{
+                            currentBuild.result = 'FAILURE'
+                            error('The application is not responding...')
+                        }
+                    }catch(error){
                         currentBuild.result = 'FAILURE'
                         throw error
                     }
