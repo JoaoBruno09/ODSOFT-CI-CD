@@ -1,4 +1,6 @@
 import de.fntsoftware.gradle.MarkdownToPdfTask
+import de.qualersoft.jmeter.gradleplugin.task.*
+
 buildscript {
     repositories {
         mavenCentral()
@@ -18,6 +20,7 @@ plugins {
     id "de.fntsoftware.gradle.markdown-to-pdf" version "1.1.0"
     id 'checkstyle'
     id  "com.github.spotbugs"  version  "5.0.13"
+    id 'de.qualersoft.jmeter' version '2.1.0'
 }
 
 defaultTasks("clean", "build")
@@ -246,4 +249,8 @@ spotbugsTest {
 	reports {
 		xml.enabled  =  true
 	}
+}
+
+task jmRun(type: JMeterRunTask) {
+    jmxFile.set("test.jmx")
 }

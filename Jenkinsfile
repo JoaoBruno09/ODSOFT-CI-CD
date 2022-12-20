@@ -202,6 +202,23 @@ pipeline{
                         }
                     }
                 }
+                stage('jmeter'){
+                    steps{
+                        script{
+                            try{
+                                if (isUnix()){
+                                    sh './gradlew jmRun'
+                                }else{
+                                    bat './gradlew jmRun'
+                                }
+                                perfReport errorFailedThreshold: 50, errorUnstableThreshold: 10, filterRegex: '', showTrendGraphs: true, sourceDataFiles: 'build/test-results/jmeter/flowcrm.jtl'
+                            }catch (error){
+                                currentBuild.result = 'FAILURE'
+                                throw error
+                            }
+                        }
+                    }
+                }
                 stage('End2EndTests'){
                     steps{
                         script{
