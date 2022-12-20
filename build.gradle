@@ -59,7 +59,7 @@ dependencies {
     implementation('com.vaadin:vaadin-spring-boot-starter')
 
     //selenium
-    implementation 'org.seleniumhq.selenium:selenium-java:2.41.0'
+    implementation 'org.seleniumhq.selenium:selenium-java:4.7.0'
     testImplementation("io.github.bonigarcia:webdrivermanager:5.3.1")
 
     //cucumber
