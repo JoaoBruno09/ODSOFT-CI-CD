@@ -178,24 +178,44 @@ pipeline{
                 }
             }
         }
-        stage("integrationTest"){
-            steps{
-                script{
-                    try{
-                        if (isUnix()){
-                            sh './gradlew integrationTest'
-                            sh './gradlew jacocoIntegrationReport'
-                            sh './gradlew jacocoTestCoverageVerification'
-                        }else{
-                            bat './gradlew integrationTest'
-                            bat './gradlew jacocoIntegrationReport'
-                            bat './gradlew jacocoTestCoverageVerification'
+        stage("Parallel 2"){
+        parallel{
+            stage("integrationTest"){
+                steps{
+                    script{
+                        try{
+                            if (isUnix()){
+                                sh './gradlew integrationTest'
+                                sh './gradlew jacocoIntegrationReport'
+                                sh './gradlew jacocoTestCoverageVerification'
+                            }else{
+                                bat './gradlew integrationTest'
+                                bat './gradlew jacocoIntegrationReport'
+                                bat './gradlew jacocoTestCoverageVerification'
+                            }
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/integration', reportFiles: 'index.html', reportName: 'IntegrationTests Report', reportTitles: '', useWrapperFileDirectly: true])
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/jacoco/jacocoIntegrationReport/html', reportFiles: 'index.html', reportName: 'IntegrationTests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
+                        }catch (error){
+                            currentBuild.result = 'FAILURE'
+                            throw error
                         }
-                        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/junitReports/integration', reportFiles: 'index.html', reportName: 'IntegrationTests Report', reportTitles: '', useWrapperFileDirectly: true])
-                        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/jacoco/jacocoIntegrationReport/html', reportFiles: 'index.html', reportName: 'IntegrationTests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
-                    }catch (error){
-                        currentBuild.result = 'FAILURE'
-                        throw error
+                    }
+                }
+            }
+            stage('End2EndTests'){
+                steps{
+                    script{
+                        try{
+                            if (isUnix()){
+                                sh './gradlew endToEnd'
+                            }else{
+                                bat './gradlew endToEnd'
+                            }
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/selenium/end2end/', reportFiles: 'index.html', reportName: 'End2End Report', reportTitles: '', useWrapperFileDirectly: true])
+                        }catch (error){
+                            currentBuild.result = 'FAILURE'
+                            throw error
+                        }
                     }
                 }
             }
