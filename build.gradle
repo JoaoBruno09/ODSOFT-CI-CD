@@ -21,6 +21,7 @@ plugins {
     id 'checkstyle'
     id  "com.github.spotbugs"  version  "5.0.13"
     id 'de.qualersoft.jmeter' version '2.1.0'
+    id "se.thinkcode.cucumber-runner" version "0.0.8"
 }
 
 defaultTasks("clean", "build")
@@ -39,6 +40,9 @@ configurations {
     developmentOnly
     runtimeClasspath {
         extendsFrom developmentOnly
+    }
+    cucumberRuntime {
+        extendsFrom testImplementation
     }
 }
 
