@@ -8,10 +8,14 @@ import java.util.stream.Stream;
 
 import com.example.application.data.entity.Company;
 import com.example.application.data.entity.Contact;
+import com.example.application.data.entity.Customer;
 import com.example.application.data.entity.Status;
+import com.example.application.data.entity.Ticket;
 import com.example.application.data.repository.CompanyRepository;
 import com.example.application.data.repository.ContactRepository;
+import com.example.application.data.repository.CustomerRepository;
 import com.example.application.data.repository.StatusRepository;
+import com.example.application.data.repository.TicketRepository;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 
 import org.slf4j.Logger;
@@ -26,7 +30,7 @@ public class DataGenerator {
 
     @Bean
     public CommandLineRunner loadData(ContactRepository contactRepository, CompanyRepository companyRepository,
-            StatusRepository statusRepository) {
+            StatusRepository statusRepository, CustomerRepository customerRepository, TicketRepository ticketRepository) {
 
         return args -> {
             Logger logger = LoggerFactory.getLogger(getClass());
@@ -61,6 +65,32 @@ public class DataGenerator {
 
             contactRepository.saveAll(contacts);
 
+            //GENERATING Customers
+            ExampleDataGenerator<Customer> customerGenerator = new ExampleDataGenerator<>(Customer.class,
+                    LocalDateTime.now());
+            customerGenerator.setData(Customer::setName, DataType.FIRST_NAME);
+            customerGenerator.setData(Customer::setAddress, DataType.ADDRESS);
+            List<Customer> customers = customerGenerator.create(3, seed).stream().collect(Collectors.toList());
+
+            customerRepository.saveAll(customers);
+            //END OF GENERATING Customers
+
+            //GENERATING Tickets
+            ExampleDataGenerator<Ticket> ticketGenerator = new ExampleDataGenerator<>(Ticket.class,
+                    LocalDateTime.now());
+            ticketGenerator.setData(Ticket::setDescription, DataType.TWO_WORDS);
+
+            List<Customer> custList = customerRepository.findAll();
+            Customer customer = custList.get(0);
+
+            List<Ticket> tickets = ticketGenerator.create(3, seed).stream().peek(ticket -> {
+                ticket.setCustomer(customer);
+                LocalDateTime currentTime = LocalDateTime.now();
+                ticket.setReportDate(currentTime);
+            }).collect(Collectors.toList());
+
+            ticketRepository.saveAll(tickets);
+            //END OF GENERATING Tickets
             logger.info("Generated demo data");
         };
     }
