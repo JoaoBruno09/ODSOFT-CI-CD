@@ -6,16 +6,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.example.application.data.entity.Company;
-import com.example.application.data.entity.Contact;
-import com.example.application.data.entity.Customer;
-import com.example.application.data.entity.Status;
-import com.example.application.data.entity.Ticket;
-import com.example.application.data.repository.CompanyRepository;
-import com.example.application.data.repository.ContactRepository;
-import com.example.application.data.repository.CustomerRepository;
-import com.example.application.data.repository.StatusRepository;
-import com.example.application.data.repository.TicketRepository;
+import com.example.application.data.entity.*;
+import com.example.application.data.repository.*;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 
 import org.slf4j.Logger;
@@ -30,7 +22,7 @@ public class DataGenerator {
 
     @Bean
     public CommandLineRunner loadData(ContactRepository contactRepository, CompanyRepository companyRepository,
-            StatusRepository statusRepository, CustomerRepository customerRepository, TicketRepository ticketRepository) {
+                                      StatusRepository statusRepository, CustomerRepository customerRepository, TicketRepository ticketRepository, ProductRepository productRepository) {
 
         return args -> {
             Logger logger = LoggerFactory.getLogger(getClass());
@@ -64,6 +56,15 @@ public class DataGenerator {
             }).collect(Collectors.toList());
 
             contactRepository.saveAll(contacts);
+
+            //GENERATING PRODUCTS
+            ExampleDataGenerator<Product> productGenerator = new ExampleDataGenerator<>(Product.class, LocalDateTime.now());
+            productGenerator.setData(Product::setDescription, DataType.FOOD_PRODUCT_NAME);
+
+            List<Product> products = productGenerator.create(3, seed).stream().collect(Collectors.toList());
+
+            productRepository.saveAll(products);
+            //END OF PRODUCT GENERATION
 
             //GENERATING Customers
             ExampleDataGenerator<Customer> customerGenerator = new ExampleDataGenerator<>(Customer.class,
