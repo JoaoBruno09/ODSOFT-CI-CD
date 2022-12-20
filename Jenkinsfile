@@ -1,4 +1,4 @@
-def version = "0.0.1"
+def version = "1.0.0"
 def url = "http://localhost:8082"
 def job_console = "http://localhost:8085/job/${env.JOB_NAME}/${env.BUILD_NUMBER}/console"
 pipeline{
