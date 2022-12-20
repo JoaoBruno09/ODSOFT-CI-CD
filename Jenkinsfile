@@ -211,7 +211,7 @@ pipeline{
                                 }else{
                                     bat './gradlew jmRun'
                                 }
-                                perfReport errorFailedThreshold: 50, errorUnstableThreshold: 10, filterRegex: '', showTrendGraphs: true, sourceDataFiles: 'build/test-results/jmeter/flowcrm.jtl'
+                                perfReport errorFailedThreshold: 50, errorUnstableThreshold: 10, filterRegex: '', showTrendGraphs: true, sourceDataFiles: 'build/test-results/jmeter/test.jtl'
                             }catch (error){
                                 currentBuild.result = 'FAILURE'
                                 throw error
