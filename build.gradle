@@ -214,6 +214,15 @@ task renameDeployFile(type: Copy) {
     rename 'flowcrmtutorial-0.0.1-SNAPSHOT.war', 'ROOT.war'; //renaming file
 }
 
+//End2End task matching the file name by convention and generating a report
+task endToEnd(type: Test) {
+    useJUnitPlatform()
+    reports.html.setDestination(file("build/htmlReports/selenium/end2end")) //setting output directory for the test result
+    filter{
+        includeTestsMatching "*E2E"  // filter by name convention
+    }
+}
+
 // Generate pdf file out of a markdown file
 task pdfConverter(type: MarkdownToPdfTask){
     inputFile = 'README.md' //The markdown file you want to convert
