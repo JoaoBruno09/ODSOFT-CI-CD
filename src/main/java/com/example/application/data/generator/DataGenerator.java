@@ -1,8 +1,7 @@
 package com.example.application.data.generator;
 
 import java.time.LocalDateTime;
-import java.util.Random;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,7 +21,8 @@ public class DataGenerator {
 
     @Bean
     public CommandLineRunner loadData(ContactRepository contactRepository, CompanyRepository companyRepository,
-                                      StatusRepository statusRepository, CustomerRepository customerRepository, TicketRepository ticketRepository, ProductRepository productRepository) {
+                                      StatusRepository statusRepository, CustomerRepository customerRepository, TicketRepository ticketRepository, ProductRepository productRepository,
+                                      SupplierRepository supplierRepository) {
 
         return args -> {
             Logger logger = LoggerFactory.getLogger(getClass());
@@ -92,6 +92,29 @@ public class DataGenerator {
 
             ticketRepository.saveAll(tickets);
             //END OF GENERATING Tickets
+
+            // GENERATING Suppliers
+            if (supplierRepository.count() != 0L) {
+                logger.info("Using existing database");
+                return;
+            }
+            ExampleDataGenerator<Supplier> supplierGenerator = new ExampleDataGenerator<>(Supplier.class,
+                    LocalDateTime.now());
+            supplierGenerator.setData(Supplier::setName, DataType.FIRST_NAME);
+            supplierGenerator.setData(Supplier::setAddress, DataType.ADDRESS);
+            Set<Product> productsSet = new HashSet<>();
+            ArrayList<Product> productsArrayList = new ArrayList<>(productRepository.findAll());
+            for (Product prod : productsArrayList) {
+                productsSet.add(prod);
+            }
+            List<Supplier> suppliers = supplierGenerator.create(3, seed).stream().peek(supplier -> {
+
+                supplier.setProduct(productsSet);
+            }).collect(Collectors.toList());
+
+            supplierRepository.saveAll(suppliers);
+            //END OF GENERATING Suppliers
+
             logger.info("Generated demo data");
         };
     }
