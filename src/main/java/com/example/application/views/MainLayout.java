@@ -52,6 +52,8 @@ public class MainLayout extends AppLayout {
             addToDrawer(new VerticalLayout(listLink,
                     new RouterLink("Product Category", ProductView.class)));
             addToDrawer(new VerticalLayout(listLink,
+                    new RouterLink("Suppliers", SuppliersView.class)));
+            addToDrawer(new VerticalLayout(listLink,
                     new RouterLink("Customers", AdminCustomerView.class)));
         }
 
