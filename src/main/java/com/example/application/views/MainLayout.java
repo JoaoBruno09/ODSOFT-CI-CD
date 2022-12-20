@@ -50,6 +50,8 @@ public class MainLayout extends AppLayout {
 
         if (auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
             addToDrawer(new VerticalLayout(listLink,
+                    new RouterLink("Product Category", ProductView.class)));
+            addToDrawer(new VerticalLayout(listLink,
                     new RouterLink("Customers", AdminCustomerView.class)));
         }
 
