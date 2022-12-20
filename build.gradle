@@ -62,6 +62,10 @@ dependencies {
     implementation 'org.seleniumhq.selenium:selenium-java:2.41.0'
     testImplementation("io.github.bonigarcia:webdrivermanager:5.3.1")
 
+    //cucumber
+    implementation group: 'io.cucumber', name: 'cucumber-java', version: '7.9.0'
+    implementation group: 'io.cucumber', name: 'cucumber-junit', version: '7.9.0'
+
     implementation "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-starter-validation:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-starter-security:$springBootVersion"
@@ -257,4 +261,24 @@ spotbugsTest {
 
 task jmRun(type: JMeterRunTask) {
     jmxFile.set("test.jmx")
+}
+
+task cucumberTest() {
+    dependsOn assemble, compileTestJava
+    doLast {
+        javaexec {
+
+            main = "io.cucumber.core.cli.Main"
+            classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+
+            args = ['--plugin', 'pretty',
+                    '--plugin', 'html:build/reports/tests/cucumber/cucumber-report.html',
+                    '--plugin', 'json:build/reports/tests/cucumber/cucumber-report.json',
+                    '--plugin', 'junit:build/reports/tests/cucumber/cucumber-report.xml',
+                    '--glue', 'cucumber.steps',
+                    '--publish',
+                    'src/test/resources/features'
+            ]
+        }
+    }
 }
