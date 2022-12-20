@@ -51,6 +51,10 @@ dependencies {
     implementation 'org.vaadin.artur.exampledata:exampledata:3.4.0'
     implementation('com.vaadin:vaadin-spring-boot-starter')
 
+    //selenium
+    implementation 'org.seleniumhq.selenium:selenium-java:2.41.0'
+    testImplementation("io.github.bonigarcia:webdrivermanager:5.3.1")
+
     implementation "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-starter-validation:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-starter-security:$springBootVersion"
@@ -208,6 +212,15 @@ task renameDeployFile(type: Copy) {
     include('flowcrmtutorial-0.0.1-SNAPSHOT.war') //specifying the file name
     destinationDir file('build/libs/') //indicationg the destination of the renamed file
     rename 'flowcrmtutorial-0.0.1-SNAPSHOT.war', 'ROOT.war'; //renaming file
+}
+
+//End2End task matching the file name by convention and generating a report
+task endToEnd(type: Test) {
+    useJUnitPlatform()
+    reports.html.setDestination(file("build/htmlReports/selenium/end2end")) //setting output directory for the test result
+    filter{
+        includeTestsMatching "*E2E"  // filter by name convention
+    }
 }
 
 // Generate pdf file out of a markdown file
