@@ -379,7 +379,7 @@ pipeline{
                     [$class:'ChoiceParameterDefinition', choices: "Yes\nNo", name: 'Answer']
                     ])
                     if (userInput == "No"){
-                        if (isUnix(){
+                        if (isUnix()){
                             sh "./gradlew rollback -PliquibaseCommandValue='1'"
                         }else{
                             bat "./gradlew rollback -PliquibaseCommandValue='1'"
