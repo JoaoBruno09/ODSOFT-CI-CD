@@ -2533,3 +2533,117 @@ stage('SmoketestProd'){
     }
 }
 ```
+
+- [x] **Upgrade database and rollback if the upgrade fails**
+  To make the database upgrade we used [liquibase](https://www.liquibase.org) that is a library that tracks, manage and applies database schema changes.
+
+We used it as a gradle plugin since they have it, we can find some of the documentation [here](https://docs.liquibase.com/tools-integrations/gradle/getting-started-liquibase-gradle.html).
+
+First of all we imported the plugin on gradle:
+```groovy
+plugins{
+	id 'org.liquibase.gradle' version '2.0.4'
+}
+```
+
+And then we added the dependencies:
+
+```
+dependencies{
+	liquibaseRuntime 'org.liquibase:liquibase-core:4.2.2'  
+	liquibaseRuntime 'org.liquibase:liquibase-groovy-dsl:2.1.1'  
+	liquibaseRuntime 'info.picocli:picocli:4.6.1'  
+	liquibaseRuntime 'org.postgresql:postgresql:42.5.1'  
+	liquibaseRuntime sourceSets.main.output
+}
+```
+
+Note that in our case we used postgresql so we will use the connector for postgresql. If you want to use other DBMS you need to edit the connector.
+
+After having the liquibase plugin applied and the dependencies we start to configure the database access (we can have more than one configuration if you have more than one database).
+```groovy
+//liquibase config  
+liquibase {  
+  activities {  
+	  main {  
+	  changeLogFile "src/main/resources/changelog/changelog.xml"  
+	  url "jdbc:postgresql://{HOST}:{PORT}/{DATABASE}"  
+	  username "postgres"  
+	  password "12345"  
+	  }  
+  }
+}
+```
+
+The changeLogFile, is a file that is generated or you manually create it to apply changes to the database. You can use .sql, .xml, .yaml, .json or .groovy files to make those changes. We used xml.
+
+The url is the connection to your database, you should change it to your values.
+
+To clarify things, the next code snippet is a xml example to create a table with the name table_test with a column id and name.
+
+```xml
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>  
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">  
+ <changeSet author="goncalopinho (generated)" id="1670703600430-8">  
+	 <createTable tableName="tabela_teste">  
+		 <column name="id" type="INTEGER"> </column> 
+		 <column name="name" type="VARCHAR(255)"/>  
+	 </createTable> 
+ </changeSet></databaseChangeLog>
+```
+
+If we run the command ```./gradlew tasks```it's possible to see the list of liquibase commands, this is a super powerful tool to track and manage databases but we will only use 3 commands:
+
+- ``./gradlew tag -PliquibaseCommandValue="1"`` - This command allows us to create a tag to a certain database state.
+- ``./gradlew update`` - This command allows us to update the database with the changes on the changelog file we've created.
+- ``./gradlew rollback -PliquibaseCommandValue="1"`` - This command allows us to rollback to a certain state of the database by the tag name.
+
+
+To the pipeline it was added the following stages:
+```groovy
+stage('updateDatabase'){  
+    steps{  
+        script{  
+            try{  
+                if (isUnix()){  
+                    sh './gradlew tag -PliquibaseCommandValue="1"'  
+                    sh './gradlew update'  
+                }else{  
+                    bat './gradlew tag -PliquibaseCommandValue="1"'  
+                    bat './gradlew update'  
+                }  
+            }catch(error){  
+                currentBuild.result = 'FAILURE'  
+  throw error  
+            }  
+        }  
+    }  
+}  
+stage('checkDbUpdate'){  
+    steps{  
+        script{  
+        try{  
+            userInput = input(id: 'userInput',  
+            message: 'Did the upgrade went well ?',  
+            parameters: [  
+            [$class:'ChoiceParameterDefinition', choices: "Yes\nNo", name: 'Answer']  
+            ])  
+            if (userInput == "No"){  
+                if (isUnix(){  
+                    sh "./gradlew rollback -PliquibaseCommandValue='1'"  
+                }else{  
+                    bat "./gradlew rollback -PliquibaseCommandValue='1'"  
+                }  
+            }  
+        }catch(error){  
+            currentBuild.result = 'FAILURE'  
+  throw error  
+        }  
+        }  
+    }  
+}
+```
+
+We have the stage to upgrade that tags the database and upgrades it with the changelog file content.
+
+And then we test the database update, we ask for a user input to tell us if it went well or not. If something bad has happened he answers no and the changes will be reverted.
