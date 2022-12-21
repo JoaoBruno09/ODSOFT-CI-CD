@@ -1563,6 +1563,7 @@ We defined 400 as maximum threshold because the purpose of this, is that the bui
 The purpose of this task is to verify the minimum build health of the integration tests coverage.
 
 For this, was developed the following task into build.gradle.
+
 ```java
 jacocoTestCoverageVerification {
 	getExecutionData().setFrom("build/jacoco/integrationTest.exec")
@@ -1575,7 +1576,9 @@ jacocoTestCoverageVerification {
 	}
 }
 ```
-For the pipeline, in the integrationTest stage just was necessary to call the task which was created previously, jacocoTestCoverageVerification, as it is shown below: 
+
+For the pipeline, in the integrationTest stage just was necessary to call the task which was created previously, jacocoTestCoverageVerification, as it is shown below:
+
 ```groovy
 stage("integrationTest"){
 	steps{
@@ -1600,6 +1603,7 @@ stage("integrationTest"){
 	}
 }
 ```
+
 If the Integration Test Coverage has less than 0.2 of coverage than the build should fail, so for this we chose 0.2 as a minimum of coverage so that the build can continue.
 
 ## 2.4 Functional and Smoke Testing
@@ -1614,49 +1618,55 @@ To do this we need to configure cucumber in our 'build.gradle' file.
 We should start by adding the cucumber configurations with the following lines of code.
 
 ```yml
-configurations { 
-	cucumberRuntime { 
-		extendsFrom testImplementation 
-	} 
+configurations {
+cucumberRuntime {
+extendsFrom testImplementation
+}
 }
 ```
+
 Second, we must add the dependencies as follows:
+
 ```yml
 //selenium
 testImplementation 'org.seleniumhq.selenium:selenium-java:4.7.0'
 testImplementation("io.github.bonigarcia:webdrivermanager:5.3.1")
- 
+
 //cucumber
 implementation  group: 'io.cucumber', name: 'cucumber-java', version: '7.9.0'
 implementation  group: 'io.cucumber', name: 'cucumber-junit', version: '7.9.0'
 ```
+
 Third, we have to build our cucumber task as follows:
+
 ```yml
 task  cucumber() {
-	dependsOn  assemble, compileTestJava
-	doLast {
-		javaexec {
-			main = "io.cucumber.core.cli.Main"
-			classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
-			args = ['--plugin', 'pretty',
-			'--plugin', 'html:build/reports/tests/cucumber/cucumber-report.html',
-			'--plugin', 'json:build/reports/tests/cucumber/cucumber-report.json',
-			'--plugin', 'junit:build/reports/tests/cucumber/cucumber-report.xml',
-			'--glue', 'cucumber.steps',
-			'--publish', 'src/test/resources/features'
-			]
-		}
-	}
+dependsOn  assemble, compileTestJava
+doLast {
+javaexec {
+main = "io.cucumber.core.cli.Main"
+classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+args = ['--plugin', 'pretty',
+'--plugin', 'html:build/reports/tests/cucumber/cucumber-report.html',
+'--plugin', 'json:build/reports/tests/cucumber/cucumber-report.json',
+'--plugin', 'junit:build/reports/tests/cucumber/cucumber-report.xml',
+'--glue', 'cucumber.steps',
+'--publish', 'src/test/resources/features'
+]
+}
+}
 }
 ```
+
 After having done all the configuration in the 'build.gradle' file, we can now create the features files inside the 'resources' folder that will be found in the following path: 'src/test/resources/features'.
 
 Inside the features folder we create three feature files that concern, respectively, products, suppliers and tickets.
 
-For each feature file, examples of scenarios related to the features initially developed in the project were created. 
-We will now show each of the developed features and their respective scenarios. 
+For each feature file, examples of scenarios related to the features initially developed in the project were created.
+We will now show each of the developed features and their respective scenarios.
 
 - **product.feature**
+
 ```yml
 Feature: product category
 
@@ -1677,12 +1687,16 @@ Feature: product category
 	And I try to navigate via URL
 	Then I should see a page that I could not navigate
 ```
+
 After that, we can run the feature to generate the java classes.
-To run the feature we can execute the following command: 
+To run the feature we can execute the following command:
+
 ```yml
 ./gradlew cucumber
 ```
+
 - [x] **Generated Classes (Product)**
+
 ```yml
 @Given("known credentials {string} {string}")
 public  void  known_credentials(String  string, String  string2) {
@@ -1732,12 +1746,14 @@ public  void  i_should_see_a_page_that_i_could_not_navigate(){
 	throw new io.cucumber.java.PendingException();
 }
 ```
+
 - **supplier.feature**
+
 ```yml
 Feature: Supplier
 
   Scenario: Only administrator can add suppliers
-  
+
     Given the known credentials 'admin'  'userpass'
 	When I login with the following username 'admin' and the following password 'userpass'
 	And I get access into the main page
@@ -1754,7 +1770,9 @@ Feature: Supplier
 	And I on the products combo box
 	Then I should see multiple product categories
 ```
+
 - [x] **Generated Classes (Supplier)**
+
 ```yml
 @Given("the known credentials {string} {string}")
 public  void  known_the_credentials(String  string, String  string2) {
@@ -1804,7 +1822,9 @@ public  void  i_should_see_multiple_product_categories() {
 	throw new io.cucumber.java.PendingException();
 }
 ```
+
 - **tickets.feature**
+
 ```yml
 Feature: Helpdesk tickets
 
@@ -1818,6 +1838,7 @@ Feature: Helpdesk tickets
 ```
 
 - [x] **Generated Classes (Tickets)**
+
 ```yml
 @Given("The url for the customer form")
 public  void  the_url_for_the_customer_form() {
@@ -1844,9 +1865,10 @@ public  void  i_should_see_only_the_tickets_i_submitted() {
 
 }
 ```
-The majority of information used for this particular part was found at: 
 
-- [Create and Configure Cucumber Gradle Project](https://www.hmtmcse.com/sqa/java-selenium-cucumber/project/java-gradle-cucumber-project)  
+The majority of information used for this particular part was found at:
+
+- [Create and Configure Cucumber Gradle Project](https://www.hmtmcse.com/sqa/java-selenium-cucumber/project/java-gradle-cucumber-project)
 - [Testing Vaadin Applications with Selenium](https://vaadin.com/docs/latest/testing/selenium)
 
 - [x] **Pipelane stages**
@@ -1872,9 +1894,11 @@ stage('Cucumber'){
     }
 }
 ```
+
 This stage includes a operating system verification and a publish HTML script to publish the report in Jenkins.
 
 ## 2.5 Non-Functional Testing
+
 The student Tiago Lacerda - 1220285 was the one in charge of this topic.
 
 - [x] **Pipelane stages**
@@ -1882,238 +1906,248 @@ The student Tiago Lacerda - 1220285 was the one in charge of this topic.
 In order to run the End To End tests in the pipeline, we had to add a new stage in the Jenkinsfile.
 
 ```groovy
-stage('End2EndTests'){  
-    steps{  
-        script{  
-            try{  
-                if (isUnix()){  
-                    sh './gradlew endToEnd'  
-                }else{  
-                    bat './gradlew endToEnd'  
-                }  
-                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/selenium/end2end/', reportFiles: 'index.html', reportName: 'End2End Report', reportTitles: '', useWrapperFileDirectly: true])  
-            }catch (error){  
-                currentBuild.result = 'FAILURE'  
-				throw error  
-            }  
-        }  
-    }  
+stage('End2EndTests'){
+    steps{
+        script{
+            try{
+                if (isUnix()){
+                    sh './gradlew endToEnd'
+                }else{
+                    bat './gradlew endToEnd'
+                }
+                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/selenium/end2end/', reportFiles: 'index.html', reportName: 'End2End Report', reportTitles: '', useWrapperFileDirectly: true])
+            }catch (error){
+                currentBuild.result = 'FAILURE'
+				throw error
+            }
+        }
+    }
 }
 ```
+
 This stage includes a operating system verification and a publishHTML script to publish the report in Jenkins.
 
 To run the JMeter task in Jenkins, we need another stage like this:
+
 ```groovy
-stage('jmeter'){  
-    steps{  
-        script{  
-            try{  
-                if (isUnix()){  
-                    sh './gradlew jmRun'  
-                }else{  
-                    bat './gradlew jmRun'  
-                }  
-                perfReport errorFailedThreshold: 50, errorUnstableThreshold: 10, filterRegex: '', showTrendGraphs: true, sourceDataFiles: 'build/test-results/jmeter/flowcrm.jtl'  
-            }catch (error){  
-                currentBuild.result = 'FAILURE'  
-				throw error  
-            }  
-        }  
-    }  
+stage('jmeter'){
+    steps{
+        script{
+            try{
+                if (isUnix()){
+                    sh './gradlew jmRun'
+                }else{
+                    bat './gradlew jmRun'
+                }
+                perfReport errorFailedThreshold: 50, errorUnstableThreshold: 10, filterRegex: '', showTrendGraphs: true, sourceDataFiles: 'build/test-results/jmeter/flowcrm.jtl'
+            }catch (error){
+                currentBuild.result = 'FAILURE'
+				throw error
+            }
+        }
+    }
 }
 ```
+
 To publish this report, we can not use the traditional publishHTML and instead we need another Jenkins Plugin named [Performance Plugin](https://plugins.jenkins.io/performance/).
 So we establish that if the test fails 10 requests, the build will become unstable and if it fails 50 requests, the build will fail.
+
 - [x] **End To End testing**
 
 End-to-end (E2E) tests are a type of automated testing that involves simulating the actions of a real user interacting with your application. They are designed to test the entire workflow of your application, from start to finish, to ensure that it is functioning correctly and as intended.
 
 Selenium is a popular open-source tool that is often used for creating E2E tests. It allows you to automate the testing of web applications by simulating the actions of a user interacting with a web browser. To execute this test, we need to add these dependencies to the `build.gradle`file:
+
 ```groovy
-//selenium  
-testImplementation 'org.seleniumhq.selenium:selenium-java:4.7.0'  
+//selenium
+testImplementation 'org.seleniumhq.selenium:selenium-java:4.7.0'
 testImplementation("io.github.bonigarcia:webdrivermanager:5.3.1")
 ```
+
 We also need to build the following script that authenticates as an administrator and adds a new product to the database:
+
 ```groovy
-public class ProductE2E {  
-  
-    @Test  
-  public void createProduct() throws InterruptedException {  
-        if(SystemUtils.IS_OS_WINDOWS){  
-            System.setProperty("webdriver.chrome.driver", "chromedriver.exe");  
-		}  
-        else{  
-            System.setProperty("webdriver.chrome.driver", "chromedriver");  
-		}  
-  
-        WebDriver driver = new ChromeDriver();  
-		driver.get("http://localhost:8082/login");  
-		//Wait until the page is ready  
-		driver.manage().window().maximize();  
-		new WebDriverWait(driver, ofSeconds(30), ofSeconds(5)).until(titleIs("Login | Vaadin CRM"));  
-  
-		//Login page elements  
-		WebElement usernameField = driver.findElement(By.cssSelector("#input-vaadin-text-field-6"));  
-		WebElement passwordField = driver.findElement(By.cssSelector("#input-vaadin-password-field-7"));  
-		WebElement loginButton = driver.findElement(By.cssSelector("vaadin-button[role='button']"));  
-  
-		//Login action  
-		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(usernameField));  
-		usernameField.click();  
-		usernameField.sendKeys("admin");  
-		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(passwordField));  
-		passwordField.click();  
-		passwordField.sendKeys("userpass");  
-		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(loginButton));  
-		loginButton.click();  
-		  
-		//Contacts page  
-		new WebDriverWait(driver, ofSeconds(30), ofSeconds(5) .until(titleIs("Contacts | Vaadin CRM"));  
-		  
-		//Contacts page elements  
-		WebElement productsButton = driver.findElement(By.cssSelector("a[href='product']"));  
-		  
-		//Go to products  
-		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(productsButton));  
-		productsButton.click();  
-  
-		//Products page  
-		String dummyProductCategory = "Soda";  
-		new WebDriverWait(driver, ofSeconds(30), ofSeconds(5)).until(titleIs("Product Categories | Vaadin CRM"));  
-		  
-		//Products categories page elements  
-		WebElement addProd = driver.findElement(By.cssSelector("vaadin-horizontal-layout[class='toolbar'] vaadin-button[role='button']"));  
-  
-		//Open form  
-		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(addProd));  
-		addProd.click();  
-		  
-		WebElement prodForm = driver.findElement(By.cssSelector("#ROOT-2521314 > vaadin-app-layout > vaadin-vertical-layout.list-view > div > vaadin-form-layout"));  
-		  
-		new WebDriverWait(driver, ofSeconds(10)).until(visibilityOf(prodForm));  
-		  
-		//Finds textfield and populates with dummy data  
-		WebElement textfield = driver.findElement(By.cssSelector("#input-vaadin-text-field-11"));  
-		textfield.click();  
-		textfield.sendKeys(dummyProductCategory);  
-		textfield.sendKeys(Keys.ENTER);  
-		//Find the last product inserted in the grid  
-		String xPathStart = "//vaadin-grid-cell-content[contains(.,'";  
-		String xPathEnd = "')]";  
-		new WebDriverWait(driver, ofSeconds(30), ofSeconds(1)).until(visibilityOfElementLocated(By.xpath(xPathStart + dummyProductCategory + xPathEnd)));  
-  
-		//Gets the cells in the table for the newly added product  
-		WebElement lastDescriptionCell = driver.findElement(By.xpath(xPathStart + dummyProductCategory + xPathEnd));  
-		  
-		Assertions.assertEquals(dummyProductCategory, lastDescriptionCell.getText());  
-  }  
+public class ProductE2E {
+
+    @Test
+  public void createProduct() throws InterruptedException {
+        if(SystemUtils.IS_OS_WINDOWS){
+            System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
+		}
+        else{
+            System.setProperty("webdriver.chrome.driver", "chromedriver");
+		}
+
+        WebDriver driver = new ChromeDriver();
+		driver.get("http://localhost:8082/login");
+		//Wait until the page is ready
+		driver.manage().window().maximize();
+		new WebDriverWait(driver, ofSeconds(30), ofSeconds(5)).until(titleIs("Login | Vaadin CRM"));
+
+		//Login page elements
+		WebElement usernameField = driver.findElement(By.cssSelector("#input-vaadin-text-field-6"));
+		WebElement passwordField = driver.findElement(By.cssSelector("#input-vaadin-password-field-7"));
+		WebElement loginButton = driver.findElement(By.cssSelector("vaadin-button[role='button']"));
+
+		//Login action
+		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(usernameField));
+		usernameField.click();
+		usernameField.sendKeys("admin");
+		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(passwordField));
+		passwordField.click();
+		passwordField.sendKeys("userpass");
+		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(loginButton));
+		loginButton.click();
+
+		//Contacts page
+		new WebDriverWait(driver, ofSeconds(30), ofSeconds(5) .until(titleIs("Contacts | Vaadin CRM"));
+
+		//Contacts page elements
+		WebElement productsButton = driver.findElement(By.cssSelector("a[href='product']"));
+
+		//Go to products
+		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(productsButton));
+		productsButton.click();
+
+		//Products page
+		String dummyProductCategory = "Soda";
+		new WebDriverWait(driver, ofSeconds(30), ofSeconds(5)).until(titleIs("Product Categories | Vaadin CRM"));
+
+		//Products categories page elements
+		WebElement addProd = driver.findElement(By.cssSelector("vaadin-horizontal-layout[class='toolbar'] vaadin-button[role='button']"));
+
+		//Open form
+		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(addProd));
+		addProd.click();
+
+		WebElement prodForm = driver.findElement(By.cssSelector("#ROOT-2521314 > vaadin-app-layout > vaadin-vertical-layout.list-view > div > vaadin-form-layout"));
+
+		new WebDriverWait(driver, ofSeconds(10)).until(visibilityOf(prodForm));
+
+		//Finds textfield and populates with dummy data
+		WebElement textfield = driver.findElement(By.cssSelector("#input-vaadin-text-field-11"));
+		textfield.click();
+		textfield.sendKeys(dummyProductCategory);
+		textfield.sendKeys(Keys.ENTER);
+		//Find the last product inserted in the grid
+		String xPathStart = "//vaadin-grid-cell-content[contains(.,'";
+		String xPathEnd = "')]";
+		new WebDriverWait(driver, ofSeconds(30), ofSeconds(1)).until(visibilityOfElementLocated(By.xpath(xPathStart + dummyProductCategory + xPathEnd)));
+
+		//Gets the cells in the table for the newly added product
+		WebElement lastDescriptionCell = driver.findElement(By.xpath(xPathStart + dummyProductCategory + xPathEnd));
+
+		Assertions.assertEquals(dummyProductCategory, lastDescriptionCell.getText());
+  }
 }
 ```
+
 We also did the same test for the suppliers:
 
 ```groovy
-public class SupplierE2E {  
-  
-    @Test  
-  public void createSupplier() throws InterruptedException {  
-  
-        if(SystemUtils.IS_OS_WINDOWS){  
-            System.setProperty("webdriver.chrome.driver", "chromedriver.exe");  
-		}  
-	     else{  
-            System.setProperty("webdriver.chrome.driver", "chromedriver");  
-		}  
-  
-        WebDriver driver = new ChromeDriver();  
-		driver.get("http://localhost:8082/login");  
-		//Wait until the page is ready  
-		driver.manage().window().maximize();  
-		new WebDriverWait(driver, ofSeconds(30), ofSeconds(5)).until(titleIs("Login | Vaadin CRM"));  
-  
-		//Login page elements  
-		WebElement usernameField = driver.findElement(By.cssSelector("#input-vaadin-text-field-6"));  
-		WebElement passwordField = driver.findElement(By.cssSelector("#input-vaadin-password-field-7"));  
-		WebElement loginButton = driver.findElement(By.cssSelector("vaadin-button[role='button']"));  
-		  
-		//Login action  
-		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(usernameField));  
-		usernameField.click();  
-		usernameField.sendKeys("admin");  
-		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(passwordField));  
-		passwordField.click();  
-		passwordField.sendKeys("userpass");  
-		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(loginButton));  
-		loginButton.click();  
-  
-		//Contacts page  
-		new WebDriverWait(driver, ofSeconds(30), ofSeconds(5)).until(titleIs("Contacts | Vaadin CRM"));  
-		  
-		//Contacts page elements  
-		WebElement suppliersButton = driver.findElement(By.cssSelector("a[href='suppliers']"));  
-		  
-		//Go to suppliers  
-		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(suppliersButton));  
-		suppliersButton.click();  
-  
-		//Suppliers page  
-		String dummySupplierName = "Nasa";  
-		String dummySupplierAddress = "Somewhere up there";  
-		new WebDriverWait(driver, ofSeconds(30), ofSeconds(5)).until(titleIs("Suppliers | Vaadin CRM"));  
-  
-		//Suppliers page elements  
-		WebElement addSupplier = driver.findElement(By.cssSelector("#ROOT-2521314 > vaadin-app-layout > vaadin-vertical-layout.list-view > vaadin-horizontal-layout > vaadin-button"));  
-  
-		//Open form  
-		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(addSupplier));  
-		addSupplier.click();  
-		  
-		WebElement supplierForm = driver.findElement(By.cssSelector("#ROOT-2521314 > vaadin-app-layout > vaadin-vertical-layout.list-view > div > vaadin-form-layout"));  
-		  
-		new WebDriverWait(driver, ofSeconds(10)).until(visibilityOf(supplierForm));  
-		  
-		//Populating with dummy data  
-		WebElement textfieldName = driver.findElement(By.cssSelector("#input-vaadin-text-field-11"));  
-		textfieldName.click();  
-		textfieldName.sendKeys(dummySupplierName);  
-		  
-		WebElement textfieldAddress = driver.findElement(By.cssSelector("#input-vaadin-text-field-15"));  
-		textfieldAddress.click();  
-		textfieldAddress.sendKeys(dummySupplierAddress);  
-  
-  
-		WebElement multiSelect = driver.findElement(By.cssSelector("#input-vaadin-multi-select-combo-box-20"));  
-		multiSelect.click();  
-		  
-		WebElement option1 = driver.findElement(By.cssSelector("#vaadin-multi-select-combo-box-item-0"));  
-		WebElement option2 = driver.findElement(By.cssSelector("#vaadin-multi-select-combo-box-item-1"));  
-		option1.click();  
-		option2.click();  
-		  
-		multiSelect.sendKeys(Keys.ESCAPE);  
-		multiSelect.sendKeys(Keys.ENTER);  
-		  
-		//Find the last supplier inserted in the grid  
-		String xPathStart = "//vaadin-grid-cell-content[contains(.,'";  
-		String xPathEnd = "')]";  
-		new WebDriverWait(driver, ofSeconds(30), ofSeconds(1)).until(visibilityOfElementLocated(By.xpath(xPathStart + dummySupplierName + xPathEnd)));  
-  
-		//Gets the cells in the table for the newly added supplier  
-		WebElement lastNameCell = driver.findElement(By.xpath(xPathStart + dummySupplierName + xPathEnd));  
-		System.out.println(lastNameCell.getText());  
-		Assertions.assertEquals(dummySupplierName, lastNameCell.getText());  
-	  }  
+public class SupplierE2E {
+
+    @Test
+  public void createSupplier() throws InterruptedException {
+
+        if(SystemUtils.IS_OS_WINDOWS){
+            System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
+		}
+	     else{
+            System.setProperty("webdriver.chrome.driver", "chromedriver");
+		}
+
+        WebDriver driver = new ChromeDriver();
+		driver.get("http://localhost:8082/login");
+		//Wait until the page is ready
+		driver.manage().window().maximize();
+		new WebDriverWait(driver, ofSeconds(30), ofSeconds(5)).until(titleIs("Login | Vaadin CRM"));
+
+		//Login page elements
+		WebElement usernameField = driver.findElement(By.cssSelector("#input-vaadin-text-field-6"));
+		WebElement passwordField = driver.findElement(By.cssSelector("#input-vaadin-password-field-7"));
+		WebElement loginButton = driver.findElement(By.cssSelector("vaadin-button[role='button']"));
+
+		//Login action
+		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(usernameField));
+		usernameField.click();
+		usernameField.sendKeys("admin");
+		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(passwordField));
+		passwordField.click();
+		passwordField.sendKeys("userpass");
+		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(loginButton));
+		loginButton.click();
+
+		//Contacts page
+		new WebDriverWait(driver, ofSeconds(30), ofSeconds(5)).until(titleIs("Contacts | Vaadin CRM"));
+
+		//Contacts page elements
+		WebElement suppliersButton = driver.findElement(By.cssSelector("a[href='suppliers']"));
+
+		//Go to suppliers
+		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(suppliersButton));
+		suppliersButton.click();
+
+		//Suppliers page
+		String dummySupplierName = "Nasa";
+		String dummySupplierAddress = "Somewhere up there";
+		new WebDriverWait(driver, ofSeconds(30), ofSeconds(5)).until(titleIs("Suppliers | Vaadin CRM"));
+
+		//Suppliers page elements
+		WebElement addSupplier = driver.findElement(By.cssSelector("#ROOT-2521314 > vaadin-app-layout > vaadin-vertical-layout.list-view > vaadin-horizontal-layout > vaadin-button"));
+
+		//Open form
+		new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(addSupplier));
+		addSupplier.click();
+
+		WebElement supplierForm = driver.findElement(By.cssSelector("#ROOT-2521314 > vaadin-app-layout > vaadin-vertical-layout.list-view > div > vaadin-form-layout"));
+
+		new WebDriverWait(driver, ofSeconds(10)).until(visibilityOf(supplierForm));
+
+		//Populating with dummy data
+		WebElement textfieldName = driver.findElement(By.cssSelector("#input-vaadin-text-field-11"));
+		textfieldName.click();
+		textfieldName.sendKeys(dummySupplierName);
+
+		WebElement textfieldAddress = driver.findElement(By.cssSelector("#input-vaadin-text-field-15"));
+		textfieldAddress.click();
+		textfieldAddress.sendKeys(dummySupplierAddress);
+
+
+		WebElement multiSelect = driver.findElement(By.cssSelector("#input-vaadin-multi-select-combo-box-20"));
+		multiSelect.click();
+
+		WebElement option1 = driver.findElement(By.cssSelector("#vaadin-multi-select-combo-box-item-0"));
+		WebElement option2 = driver.findElement(By.cssSelector("#vaadin-multi-select-combo-box-item-1"));
+		option1.click();
+		option2.click();
+
+		multiSelect.sendKeys(Keys.ESCAPE);
+		multiSelect.sendKeys(Keys.ENTER);
+
+		//Find the last supplier inserted in the grid
+		String xPathStart = "//vaadin-grid-cell-content[contains(.,'";
+		String xPathEnd = "')]";
+		new WebDriverWait(driver, ofSeconds(30), ofSeconds(1)).until(visibilityOfElementLocated(By.xpath(xPathStart + dummySupplierName + xPathEnd)));
+
+		//Gets the cells in the table for the newly added supplier
+		WebElement lastNameCell = driver.findElement(By.xpath(xPathStart + dummySupplierName + xPathEnd));
+		System.out.println(lastNameCell.getText());
+		Assertions.assertEquals(dummySupplierName, lastNameCell.getText());
+	  }
 }
 ```
+
 These tests can be executed with the following command `./gradlew endToEnd` that will perform this task:
+
 ```groovy
-//End2End task matching the file name by convention and generating a report  
-task endToEnd(type: Test) {  
-  useJUnitPlatform()  
-  reports.html.setDestination(file("build/htmlReports/selenium/end2end")) //setting output directory for the test result  
-  filter{  
-  includeTestsMatching "*E2E" // filter by name convention  
-  }  
+//End2End task matching the file name by convention and generating a report
+task endToEnd(type: Test) {
+  useJUnitPlatform()
+  reports.html.setDestination(file("build/htmlReports/selenium/end2end")) //setting output directory for the test result
+  filter{
+  includeTestsMatching "*E2E" // filter by name convention
+  }
 }
 ```
 
@@ -2126,119 +2160,122 @@ JMeter can be used to test the performance of various types of applications, inc
 
 In this case, we use JMeter to measure the throughput, the response time and the percentage of errors in our application.
 First, we need to add this plugin `id 'de.qualersoft.jmeter' version '2.1.0'` and import `import de.qualersoft.jmeter.gradleplugin.task.*`, then, in order to execute this task, we can use the following command `./gradlew jmRun` that will run this task:
+
 ```groovy
-task jmRun(type: JMeterRunTask) {  
-  jmxFile.set("test.jmx")  
+task jmRun(type: JMeterRunTask) {
+  jmxFile.set("test.jmx")
 }
 ```
+
 This file is generated by the JMeter GUI which is composed by two HTTP requests for Login and Customer view, and a Thread Group that will simulate 1000 users with a ramp-up period of 5 seconds and a loop count of 4:
+
 ```xml
-<?xml version="1.0" encoding="UTF-8"?>  
-<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.5">  
-  <hashTree>  
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Vaadin Test" enabled="true">  
-      <stringProp name="TestPlan.comments"></stringProp>  
-      <boolProp name="TestPlan.functional_mode">false</boolProp>  
-      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>  
-      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>  
-      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">  
-        <collectionProp name="Arguments.arguments"/>  
-      </elementProp>  
-      <stringProp name="TestPlan.user_define_classpath"></stringProp>  
-    </TestPlan>  
-    <hashTree>  
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group" enabled="true">  
-        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>  
-        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">  
-          <boolProp name="LoopController.continue_forever">false</boolProp>  
-          <stringProp name="LoopController.loops">4</stringProp>  
-        </elementProp>  
-        <stringProp name="ThreadGroup.num_threads">1000</stringProp>  
-        <stringProp name="ThreadGroup.ramp_time">5</stringProp>  
-        <boolProp name="ThreadGroup.scheduler">false</boolProp>  
-        <stringProp name="ThreadGroup.duration"></stringProp>  
-        <stringProp name="ThreadGroup.delay"></stringProp>  
-        <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>  
-      </ThreadGroup>  
-      <hashTree>  
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login Request" enabled="true">  
-          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">  
-            <collectionProp name="Arguments.arguments"/>  
-          </elementProp>  
-          <stringProp name="HTTPSampler.domain">localhost</stringProp>  
-          <stringProp name="HTTPSampler.port">8082</stringProp>  
-          <stringProp name="HTTPSampler.protocol"></stringProp>  
-          <stringProp name="HTTPSampler.contentEncoding"></stringProp>  
-          <stringProp name="HTTPSampler.path">login</stringProp>  
-          <stringProp name="HTTPSampler.method">GET</stringProp>  
-          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>  
-          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>  
-          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>  
-          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>  
-          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>  
-          <stringProp name="HTTPSampler.connect_timeout"></stringProp>  
-          <stringProp name="HTTPSampler.response_timeout"></stringProp>  
-        </HTTPSamplerProxy>  
-        <hashTree/>  
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Customer Request" enabled="true">  
-          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">  
-            <collectionProp name="Arguments.arguments"/>  
-          </elementProp>  
-          <stringProp name="HTTPSampler.domain">localhost</stringProp>  
-          <stringProp name="HTTPSampler.port">8082</stringProp>  
-          <stringProp name="HTTPSampler.protocol"></stringProp>  
-          <stringProp name="HTTPSampler.contentEncoding"></stringProp>  
-          <stringProp name="HTTPSampler.path">customer</stringProp>  
-          <stringProp name="HTTPSampler.method">GET</stringProp>  
-          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>  
-          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>  
-          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>  
-          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>  
-          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>  
-          <stringProp name="HTTPSampler.connect_timeout"></stringProp>  
-          <stringProp name="HTTPSampler.response_timeout"></stringProp>  
-        </HTTPSamplerProxy>  
-        <hashTree/>  
-        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="Results Tree" enabled="true">  
-          <boolProp name="ResultCollector.error_logging">false</boolProp>  
-          <objProp>  
-            <name>saveConfig</name>  
-            <value class="SampleSaveConfiguration">  
-              <time>true</time>  
-              <latency>true</latency>  
-              <timestamp>true</timestamp>  
-              <success>true</success>  
-              <label>true</label>  
-              <code>true</code>  
-              <message>true</message>  
-              <threadName>true</threadName>  
-              <dataType>true</dataType>  
-              <encoding>false</encoding>  
-              <assertions>true</assertions>  
-              <subresults>true</subresults>  
-              <responseData>false</responseData>  
-              <samplerData>false</samplerData>  
-              <xml>false</xml>  
-              <fieldNames>true</fieldNames>  
-              <responseHeaders>false</responseHeaders>  
-              <requestHeaders>false</requestHeaders>  
-              <responseDataOnError>false</responseDataOnError>  
-              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>  
-              <assertionsResultsToSave>0</assertionsResultsToSave>  
-              <bytes>true</bytes>  
-              <sentBytes>true</sentBytes>  
-              <url>true</url>  
-              <threadCounts>true</threadCounts>  
-              <idleTime>true</idleTime>  
-              <connectTime>true</connectTime>  
-            </value>  
-          </objProp>  
-          <stringProp name="filename"></stringProp>  
-        </ResultCollector>  
-        <hashTree/>  
-      </hashTree>  
-    </hashTree>  
-  </hashTree>  
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.5">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Vaadin Test" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">4</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1000</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">5</stringProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login Request" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8082</stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">login</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Customer Request" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8082</stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">customer</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="Results Tree" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
 </jmeterTestPlan>
 ```
 
@@ -2341,4 +2378,21 @@ stage('SmoketestProd'){
 }
 ```
 
+- [x] **Generate Build Version**
 
+1220256 João Rocha was responsible for this task
+
+The purpose of this task is to generate a new version of the build when a new build starts. This was done using the actual date time, as it is shown below.
+
+```groovy
+def version = createVersion()
+...
+...
+...
+...
+String  createVersion() {
+	String versionName =  new  Date().format('yyyyMMddHHmm')  +  '-BUILD'
+	currentBuild.description = versionName
+	return versionName
+}
+```
