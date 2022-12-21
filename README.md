@@ -1602,104 +1602,278 @@ stage("integrationTest"){
 ```
 If the Integration Test Coverage has less than 0.2 of coverage than the build should fail, so for this we chose 0.2 as a minimum of coverage so that the build can continue.
 
-## 2.6 Continuous Deployment
+## 2.4 Functional and Smoke Testing
 
-The student, Gonçalo Pinho-1220257 was the one in charge of the documentation and database.
+The student, Nuno Leite -1220271 was responsible for this task.
 
 \*\*
 
-On this part of the assignment we were supposed to simulate a production environment with docker and deploy the project there.
-The persistence layer that we talked about in the point 2.2, is going to be applied on the production environment because it doesn't make sense to persist data on the staging environment.
+In this task, in a first phase, it was necessary to do the acceptance tests with Cucumber and Selenium, which should cover the specifics of the project. Cucumber test and Coverage report should be published.
 
-Since docker has the ability to define and run multi-container docker applications we also used a docker-compose.yml file to define the two services that will run at the same time. It's the same logic as the staging environment but with the difference that it persists the data of the database.
+To do this we need to configure cucumber in our 'build.gradle' file.
+We should start by adding the cucumber configurations with the following lines of code.
 
 ```yml
-version: '3.1'
-services:
-  app:
-    container_name: vaadin-crm
-    image: odsoft-image
-    build: ./
-    ports:
-      - "8082:8080"
-  environment:
-      - DB_HOST=postgresqlcrm
-      - DB_PORT=5432
-    depends_on:
-      - postgresqlcrm
-  postgresqlcrm:
-    container_name: postgresqlcrm
-    image: postgres
-    ports:
-      - "5433:5432"
-  environment:
-      - POSTGRES_PASSWORD=12345
-      - POSTGRES_USER=postgres
-      - POSTGRES_DB=odsoft
-    volumes:
-      - "odsoft_data:/var/lib/postgresql/data"
-volumes:
-  odsoft_data:
-```
-
-As we can see we have two services the`app`and the `postgresqlcrm` the app will use our previously built docker image, and we will be able to access the project though the port 8082. Since we need to change databases we configured the application.properties to be able to connect to the database via environment variables, as we can see we have two of them, the DB_HOST and DB_PORT. There's something we need to be careful while creating multi-containers that one depends on another like on this case.When you want to access something that is inside other container you need to use the name of that container as the IP like we can see on the previous docker-compose.
-
-All of this information was found in [docker compose documentation](https://docs.docker.com/compose/compose-file/)
-
-To run this file on the pipeline we used the following stage:
-
-```groovy
-stage("DeployProd"){
-    steps {
-        script{
-            try{
-                if (isUnix()){
-                    sh 'docker-compose -f docker-compose-staging.yml down'
-                    sh 'docker-compose up -d'
-                }else{
-                    bat 'docker-compose -f docker-compose-staging.yml down'
-                    bat 'docker-compose up -d'
-                }
-            }catch (error){
-                currentBuild.result = 'FAILURE'
-  throw error
-            }
-        }
-    }
+configurations { 
+	cucumberRuntime { 
+		extendsFrom testImplementation 
+	} 
 }
 ```
+Second, we must add the dependencies as follows:
+```yml
+//selenium
+testImplementation 'org.seleniumhq.selenium:selenium-java:4.7.0'
+testImplementation("io.github.bonigarcia:webdrivermanager:5.3.1")
+ 
+//cucumber
+implementation  group: 'io.cucumber', name: 'cucumber-java', version: '7.9.0'
+implementation  group: 'io.cucumber', name: 'cucumber-junit', version: '7.9.0'
+```
+Third, we have to build our cucumber task as follows:
+```yml
+task  cucumber() {
+	dependsOn  assemble, compileTestJava
+	doLast {
+		javaexec {
+			main = "io.cucumber.core.cli.Main"
+			classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+			args = ['--plugin', 'pretty',
+			'--plugin', 'html:build/reports/tests/cucumber/cucumber-report.html',
+			'--plugin', 'json:build/reports/tests/cucumber/cucumber-report.json',
+			'--plugin', 'junit:build/reports/tests/cucumber/cucumber-report.xml',
+			'--glue', 'cucumber.steps',
+			'--publish', 'src/test/resources/features'
+			]
+		}
+	}
+}
+```
+After having done all the configuration in the 'build.gradle' file, we can now create the features files inside the 'resources' folder that will be found in the following path: 'src/test/resources/features'.
 
-As we can see on the code snipped, first, we shutdown the docker-compose-staging and then we start the docker-compose that has the production environment.
+Inside the features folder we create three feature files that concern, respectively, products, suppliers and tickets.
 
-After the environment is up, we perform a smoke test:
+For each feature file, examples of scenarios related to the features initially developed in the project were created. 
+We will now show each of the developed features and their respective scenarios. 
+
+- **product.feature**
+```yml
+Feature: product category
+
+  Scenario: Only administrator can add products
+
+	Given known credentials 'admin'  'userpass'
+	When I login with username 'admin' and password 'userpass'
+	And I get access to the mainpage
+	And I click on product category menu
+	Then we should see the product category page
+
+  Scenario: Normal user try to acess product category page
+
+	Given known credentials 'user'  'userpass'
+	When I login with username 'user' and password 'userpass'
+	And I get access to the mainpage
+	And I can't see product category menu
+	And I try to navigate via URL
+	Then I should see a page that I could not navigate
+```
+After that, we can run the feature to generate the java classes.
+To run the feature we can execute the following command: 
+```yml
+./gradlew cucumber
+```
+- [x] **Generated Classes (Product)**
+```yml
+@Given("known credentials {string} {string}")
+public  void  known_credentials(String  string, String  string2) {
+	// Write code here that turns the phrase above into concrete actions
+	throw new io.cucumber.java.PendingException();
+}
+
+@When("I login with username {string} and password {string}")
+public  void  i_login_with_username_and_password(String  user, String  pass) {
+	// Write code here that turns the phrase above into concrete actions
+	throw new io.cucumber.java.PendingException();
+}
+
+@When("I get access to the mainpage")
+public  void  i_get_access_to_the_mainpage() {
+	// Write code here that turns the phrase above into concrete actions
+	throw new io.cucumber.java.PendingException();
+}
+
+@When("I click on product category menu")
+public  void  i_click_on_product_category_menu() {
+	// Write code here that turns the phrase above into concrete actions
+	throw new io.cucumber.java.PendingException();
+}
+
+@Then("we should see the product category page")
+public  void  we_should_see_the_product_category_page() {
+	// Write code here that turns the phrase above into concrete actions
+	throw new io.cucumber.java.PendingException();
+}
+
+@When("I can't see product category menu")
+public  void  i_can_t_see_product_category_menu() {
+	// Write code here that turns the phrase above into concrete actions
+	throw new io.cucumber.java.PendingException();
+}
+
+@When("I try to navigate via URL")
+public  void  i_try_to_navigate_via_url() {
+	// Write code here that turns the phrase above into concrete actions
+	throw new io.cucumber.java.PendingException();
+}
+
+@Then("I should see a page that I could not navigate")
+public  void  i_should_see_a_page_that_i_could_not_navigate(){
+	// Write code here that turns the phrase above into concrete actions
+	throw new io.cucumber.java.PendingException();
+}
+```
+- **supplier.feature**
+```yml
+Feature: Supplier
+
+  Scenario: Only administrator can add suppliers
+  
+    Given the known credentials 'admin'  'userpass'
+	When I login with the following username 'admin' and the following password 'userpass'
+	And I get access into the main page
+	And I click on suppliers menu
+	Then I should see the suppliers page
+
+  Scenario: Supplier can supply multiple products categories
+
+	Given the known credentials 'admin'  'userpass'
+	When I login with the following username 'admin' and the following password 'userpass'
+	And I get access into the main page
+	And I click on suppliers menu
+	And I click the add supplier button
+	And I on the products combo box
+	Then I should see multiple product categories
+```
+- [x] **Generated Classes (Supplier)**
+```yml
+@Given("the known credentials {string} {string}")
+public  void  known_the_credentials(String  string, String  string2) {
+	// Write code here that turns the phrase above into concrete actions
+	throw new io.cucumber.java.PendingException();
+}
+
+@When("I login with the following username {string} and the following password {string}")
+public  void  i_login_with_the_following_username_and_the_following_password(String  user, String  pass) {
+	// Write code here that turns the phrase above into concrete actions
+	throw new io.cucumber.java.PendingException();
+}
+
+@When("I get access into the main page")
+public  void  i_get_access_into_the_main_page() {
+	// Write code here that turns the phrase above into concrete actions
+	throw new io.cucumber.java.PendingException();
+}
+
+@When("I click on suppliers menu")
+public  void  i_click_on_suppliers_menu() {
+	// Write code here that turns the phrase above into concrete actions
+	throw new io.cucumber.java.PendingException();
+}
+
+@Then("I should see the suppliers page")
+public  void  i_should_see_the_suppliers_page() {
+	// Write code here that turns the phrase above into concrete actions
+	throw new io.cucumber.java.PendingException();
+}
+
+@When("I click the add supplier button")
+public  void  i_click_the_add_supplier_button() {
+	// Write code here that turns the phrase above into concrete actions
+	throw new io.cucumber.java.PendingException();
+}
+
+@When("I on the products combo box")
+public  void  i_on_the_products_combo_box() {
+	// Write code here that turns the phrase above into concrete actions
+	throw new io.cucumber.java.PendingException();
+}
+
+@Then("I should see multiple product categories")
+public  void  i_should_see_multiple_product_categories() {
+	// Write code here that turns the phrase above into concrete actions
+	throw new io.cucumber.java.PendingException();
+}
+```
+- **tickets.feature**
+```yml
+Feature: Helpdesk tickets
+
+  Scenario: Access to personal tickets
+
+	Given The url for the customer form
+	When I get access to the customer form
+	And I submit the form with the name 'Eula' and the adress '1395 Jigror Park'
+	And I get access to the tickets page
+	Then I should see only the tickets i submitted
+```
+
+- [x] **Generated Classes (Tickets)**
+```yml
+@Given("The url for the customer form")
+public  void  the_url_for_the_customer_form() {
+
+}
+
+@When("I get access to the customer form")
+public  void  i_get_access_to_the_customer_form() {
+
+}
+
+@When("I submit the form with the name {string} and the adress {string}")
+public  void  i_submit_the_form_with_the_name_and_the_adress(String  name, String  address) {
+
+}
+
+@When("I get access to the tickets page")
+public  void  i_get_access_to_the_tickets_page() {
+
+}
+
+@Then("I should see only the tickets i submitted")
+public  void  i_should_see_only_the_tickets_i_submitted() {
+
+}
+```
+The majority of information used for this particular part was found at: 
+
+- [Create and Configure Cucumber Gradle Project](https://www.hmtmcse.com/sqa/java-selenium-cucumber/project/java-gradle-cucumber-project)  
+- [Testing Vaadin Applications with Selenium](https://vaadin.com/docs/latest/testing/selenium)
+
+- [x] **Pipelane stages**
+
+In order to run the Cucumber test in the pipeline, we had to add a new stage in the Jenkinsfile.
 
 ```groovy
-stage('SmoketestProd'){
+stage('Cucumber'){
     steps{
         script{
             try{
                 if (isUnix()){
-                    httpCode = sh( script: "curl -s -o /dev/null -w '%{http_code}' $url/login", returnStdout: true ).trim()
-                    echo httpCode
+                    sh './gradlew cucumberTest'
                 }else{
-                    httpCode = bat( script: "curl -s -o ./response -w %%{http_code} $url/login", returnStdout: true).trim()
-                    httpCode = httpCode.readLines().drop(1).join(" ")//windows returns full command plus the response, but the response is at a new line so we can drop the first line and remove spaces and we get only the http code
+                    bat './gradlew cucumberTest'
                 }
-                //checking if the http code was ok(200) or found(302)
-  if (httpCode == "200" || httpCode == "302"){
-                    echo 'The application is responding!'
-                }else{
-                    currentBuild.result = 'FAILURE'
-  error('The application is not responding...')
-                }
-            }catch(error){
+                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/tests/cucumber/', reportFiles: 'cucumber-report.html', reportName: 'Cucumber Report', reportTitles: '', useWrapperFileDirectly: true])
+            }catch (error){
                 currentBuild.result = 'FAILURE'
-  throw error
+                throw error
             }
         }
     }
 }
 ```
+This stage includes a operating system verification and a publish HTML script to publish the report in Jenkins.
+
 ## 2.5 Non-Functional Testing
 The student Tiago Lacerda - 1220285 was the one in charge of this topic.
 
@@ -2067,4 +2241,104 @@ This file is generated by the JMeter GUI which is composed by two HTTP requests 
   </hashTree>  
 </jmeterTestPlan>
 ```
+
+## 2.6 Continuous Deployment
+
+The student, Gonçalo Pinho-1220257 was the one in charge of the documentation and database.
+
+\*\*
+
+On this part of the assignment we were supposed to simulate a production environment with docker and deploy the project there.
+The persistence layer that we talked about in the point 2.2, is going to be applied on the production environment because it doesn't make sense to persist data on the staging environment.
+
+Since docker has the ability to define and run multi-container docker applications we also used a docker-compose.yml file to define the two services that will run at the same time. It's the same logic as the staging environment but with the difference that it persists the data of the database.
+
+```yml
+version: '3.1'
+services:
+  app:
+    container_name: vaadin-crm
+    image: odsoft-image
+    build: ./
+    ports:
+      - "8082:8080"
+  environment:
+      - DB_HOST=postgresqlcrm
+      - DB_PORT=5432
+    depends_on:
+      - postgresqlcrm
+  postgresqlcrm:
+    container_name: postgresqlcrm
+    image: postgres
+    ports:
+      - "5433:5432"
+  environment:
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=odsoft
+    volumes:
+      - "odsoft_data:/var/lib/postgresql/data"
+volumes:
+  odsoft_data:
+```
+
+As we can see we have two services the`app`and the `postgresqlcrm` the app will use our previously built docker image, and we will be able to access the project though the port 8082. Since we need to change databases we configured the application.properties to be able to connect to the database via environment variables, as we can see we have two of them, the DB_HOST and DB_PORT. There's something we need to be careful while creating multi-containers that one depends on another like on this case.When you want to access something that is inside other container you need to use the name of that container as the IP like we can see on the previous docker-compose.
+
+All of this information was found in [docker compose documentation](https://docs.docker.com/compose/compose-file/)
+
+To run this file on the pipeline we used the following stage:
+
+```groovy
+stage("DeployProd"){
+    steps {
+        script{
+            try{
+                if (isUnix()){
+                    sh 'docker-compose -f docker-compose-staging.yml down'
+                    sh 'docker-compose up -d'
+                }else{
+                    bat 'docker-compose -f docker-compose-staging.yml down'
+                    bat 'docker-compose up -d'
+                }
+            }catch (error){
+                currentBuild.result = 'FAILURE'
+  throw error
+            }
+        }
+    }
+}
+```
+
+As we can see on the code snipped, first, we shutdown the docker-compose-staging and then we start the docker-compose that has the production environment.
+
+After the environment is up, we perform a smoke test:
+
+```groovy
+stage('SmoketestProd'){
+    steps{
+        script{
+            try{
+                if (isUnix()){
+                    httpCode = sh( script: "curl -s -o /dev/null -w '%{http_code}' $url/login", returnStdout: true ).trim()
+                    echo httpCode
+                }else{
+                    httpCode = bat( script: "curl -s -o ./response -w %%{http_code} $url/login", returnStdout: true).trim()
+                    httpCode = httpCode.readLines().drop(1).join(" ")//windows returns full command plus the response, but the response is at a new line so we can drop the first line and remove spaces and we get only the http code
+                }
+                //checking if the http code was ok(200) or found(302)
+  if (httpCode == "200" || httpCode == "302"){
+                    echo 'The application is responding!'
+                }else{
+                    currentBuild.result = 'FAILURE'
+  error('The application is not responding...')
+                }
+            }catch(error){
+                currentBuild.result = 'FAILURE'
+  throw error
+            }
+        }
+    }
+}
+```
+
 

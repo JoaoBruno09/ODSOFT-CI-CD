@@ -16,11 +16,12 @@ plugins {
     id 'com.vaadin' version "23.2.4"
     id 'war'
     id 'jacoco'
-    id 'info.solidsoft.pitest' version '1.7.4'
+    id 'info.solidsoft.pitest' version '1.9.0'
     id "de.fntsoftware.gradle.markdown-to-pdf" version "1.1.0"
     id 'checkstyle'
     id  "com.github.spotbugs"  version  "5.0.13"
     id 'de.qualersoft.jmeter' version '2.1.0'
+    id "se.thinkcode.cucumber-runner" version "0.0.8"
 }
 
 defaultTasks("clean", "build")
@@ -40,6 +41,9 @@ configurations {
     runtimeClasspath {
         extendsFrom developmentOnly
     }
+    cucumberRuntime {
+        extendsFrom testImplementation
+    }
 }
 
 dependencies {
@@ -55,8 +59,12 @@ dependencies {
     implementation('com.vaadin:vaadin-spring-boot-starter')
 
     //selenium
-    implementation 'org.seleniumhq.selenium:selenium-java:2.41.0'
+    implementation 'org.seleniumhq.selenium:selenium-java:4.7.0'
     testImplementation("io.github.bonigarcia:webdrivermanager:5.3.1")
+
+    //cucumber
+    implementation group: 'io.cucumber', name: 'cucumber-java', version: '7.9.0'
+    implementation group: 'io.cucumber', name: 'cucumber-junit', version: '7.9.0'
 
     implementation "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-starter-validation:$springBootVersion"
@@ -98,7 +106,8 @@ test {
 
 pitest {
 
-    junit5PluginVersion = '0.15'
+    junit5PluginVersion = '1.0.0'
+    pitestVersion = '1.9.0'
     timestampedReports = false
     pitest.excludedTestClasses = ['com.example.application.views.list.*IT'] //Excludint integrationTests
 
@@ -253,4 +262,24 @@ spotbugsTest {
 
 task jmRun(type: JMeterRunTask) {
     jmxFile.set("test.jmx")
+}
+
+task cucumberTest() {
+    dependsOn assemble, compileTestJava
+    doLast {
+        javaexec {
+
+            main = "io.cucumber.core.cli.Main"
+            classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+
+            args = ['--plugin', 'pretty',
+                    '--plugin', 'html:build/reports/tests/cucumber/cucumber-report.html',
+                    '--plugin', 'json:build/reports/tests/cucumber/cucumber-report.json',
+                    '--plugin', 'junit:build/reports/tests/cucumber/cucumber-report.xml',
+                    '--glue', 'cucumber.steps',
+                    '--publish',
+                    'src/test/resources/features'
+            ]
+        }
+    }
 }
