@@ -1057,6 +1057,40 @@ Comparing the average full build time, the sequential pipeline is better by almo
 
 This second assignment started a 17 Nov and ends at 22 Dec.
 
+## 1.2 Features
+
+- [x] **Suppliers**
+
+1220285 Tiago Lacerda was responsible for this feature
+
+For this feature was created the entity, the repository, the service, the form, and the view, everything for the suppliers can work properly.
+
+The biggest difficult was when selecting two or more products should add all of those ones into data base.
+
+- [x] **Costumers**
+
+1220256 João Rocha was responsible for this feature
+
+For the customers feature, was created the Customer entity, the Customer repository, the Customer service, the Customer Form, the Customer View and the Admin Customer View. Also was created the Integration Test for the Customer View and the Unit Test for the Customer From.
+
+The biggest difficult was developed the Customer View integration test, because it was needed to create a user and insert him into database and then verify if the same user was in the data grid.
+
+- [x] **Helpdesk Tickets**
+
+1220271 Nuno Leite was responsible for this feature
+
+For this feature can do want is supposed to do according to assignment 2, was developed the entity, the repository, the service, and the view.
+
+The biggest difficult in this feature was when a customer just could see a ticket when the ticket is connected to him.
+
+- [x] **Product Categories**
+
+1220256 Gonçalo Pinho was responsible for this feature
+
+For the Product Categories, the last feature, was developed the Product entity, the Product repository, the Product Service and the Product View.
+
+The biggest difficult was due to a short time to learn Vaadin because this technology was neved used before.
+
 ## 2.1 Base pipeline and persistence
 
 This point was developed by all team members.
