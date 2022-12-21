@@ -1,4 +1,4 @@
-def version = "1.0.0"
+def version = createVersion()
 def url = "http://localhost:8082"
 def job_console = "http://localhost:8085/job/${env.JOB_NAME}/${env.BUILD_NUMBER}/console"
 pipeline{
@@ -353,4 +353,10 @@ pipeline{
             }
         }
     }
+}
+
+String createVersion() {
+    String versionName = new Date().format('yyyyMMddHHmm') + '-BUILD'
+    currentBuild.description = versionName
+    return versionName
 }
