@@ -2032,7 +2032,6 @@ stage("Build"){
 					bat  './gradlew renameDeployFile'
 					bat  "docker build -t odsoft-image ."
 				}
-
 				withCredentials([[$class: 
 				'UsernamePasswordMultiBinding', 
 				credentialsId: 'dockerhubcredentials', 
@@ -2041,12 +2040,10 @@ stage("Build"){
 				if (isUnix()){
 					sh  "docker login -u ${env.USERNAME} -p ${env.PASSWORD}"
 					sh  'docker tag odsoft-image 1220257/odsoft-image'
-					sh  'docker tag odsoft-image 1220257/odsoft-image'
 					sh  'docker push 1220257/odsoft-image'
 				}
 				else{
 					bat  "docker login -u ${env.USERNAME} -p ${env.PASSWORD}"
-					bat  'docker tag odsoft-image 1220257/odsoft-image'
 					bat  'docker tag odsoft-image 1220257/odsoft-image'
 					bat  'docker push 1220257/odsoft-image'
 				}
