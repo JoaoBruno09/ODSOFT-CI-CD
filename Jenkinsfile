@@ -42,6 +42,18 @@ pipeline{
                             bat "docker build -t odsoft-image ."
 
                         }
+                        withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhubcredentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+                        // Access the values of the credential within the block
+                            if (isUnix()){
+                                sh "docker login -u ${env.USERNAME} -p ${env.PASSWORD}"
+                                sh 'docker tag odsoft-image 1220257/odsoft-image'
+                                sh 'docker push 1220257/odsoft-image'
+                            }else{
+                                bat "docker login -u ${env.USERNAME} -p ${env.PASSWORD}"
+                                bat 'docker tag odsoft-image 1220257/odsoft-image'
+                                bat 'docker push 1220257/odsoft-image'                                
+                            }
+                        }
                         archiveArtifacts artifacts: 'build/libs/flowcrmtutorial-0.0.1-SNAPSHOT.war', followSymlinks: false
                     }catch (error){
                         currentBuild.result = 'FAILURE'
