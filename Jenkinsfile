@@ -178,7 +178,7 @@ pipeline{
                 }
             }
         }
-        stage("Parallel"){
+        stage("Parallel 2"){
             parallel{
                 stage("integrationTest"){
                     steps{
@@ -224,7 +224,7 @@ pipeline{
 
 
 
-        stage("Parallel 2"){
+        stage("Parallel 3"){
             parallel{
                 stage('jmeter'){
                     steps{
@@ -262,7 +262,7 @@ pipeline{
                 }
             }
         }
-        stage('Parallel'){
+        stage('Parallel 4'){
             parallel{
             //START OF PARALLEL
                 stage("DeployProd"){
