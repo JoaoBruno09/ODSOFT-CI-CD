@@ -326,6 +326,17 @@ pipeline{
             }
             //END OF PARALLEL
         }
+        stage('GenerateZipFile'){
+            steps{
+                script{
+                    if (isUnix()){
+                        sh './gradlew genZip'
+                    }else{
+                        bat './gradlew genZip'
+                    }
+                }
+            }
+        }
         stage('SmoketestProd'){
             steps{
                 script{
