@@ -85,15 +85,33 @@ public class supplierSteps {
 
     @When("I click the add supplier button")
     public void i_click_the_add_supplier_button() {
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
+        try {
+            By buttonCss = By.cssSelector("#ROOT-2521314 > vaadin-app-layout > vaadin-vertical-layout.list-view > vaadin-horizontal-layout > vaadin-button");
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+            wait.until(ExpectedConditions.elementToBeClickable(buttonCss));
             WebElement addSuppliersButton = driver.findElement(By.cssSelector("#ROOT-2521314 > vaadin-app-layout > vaadin-vertical-layout.list-view > vaadin-horizontal-layout > vaadin-button"));
             //Go to add suppliers button
             new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(addSuppliersButton));
-            addSuppliersButton.click();    
+            addSuppliersButton.click();
+        }
+        catch(org.openqa.selenium.StaleElementReferenceException ex)
+        {
+            By buttonCss = By.cssSelector("#ROOT-2521314 > vaadin-app-layout > vaadin-vertical-layout.list-view > vaadin-horizontal-layout > vaadin-button");
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+            wait.until(ExpectedConditions.elementToBeClickable(buttonCss));
+            WebElement addSuppliersButton = driver.findElement(By.cssSelector("#ROOT-2521314 > vaadin-app-layout > vaadin-vertical-layout.list-view > vaadin-horizontal-layout > vaadin-button"));
+            //Go to add suppliers button
+            new WebDriverWait(driver, ofSeconds(30), ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(addSuppliersButton));
+            addSuppliersButton.click();
+        }
+
     }
 
     @When("I on the products combo box")
     public void i_on_the_products_combo_box() {
+        By combo = By.cssSelector("#input-vaadin-multi-select-combo-box-20");
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+        wait.until(ExpectedConditions.elementToBeClickable(combo));
         WebElement multiSelect = driver.findElement(By.cssSelector("#input-vaadin-multi-select-combo-box-20"));
         multiSelect.click();
 
