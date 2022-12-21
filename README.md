@@ -1364,6 +1364,74 @@ stage('ConvertMDtoPDF'){
 }
 ```
 
+**Generate Zip file**
+
+To create a zip file with gradle we used the zip tak.
+
+```groovy
+//Generate zip file  
+task genZip(type: Zip) {  
+  archiveName = "G202_ODSOFT.zip" //name of the zip  
+  destinationDir = file("build") //where is going to be generated the zip file  
+  
+  from('build/test-results/jmeter/'){  
+  include 'test.jtl'  
+  }  
+  from('build/libs/') {  
+  include 'ROOT.war'  
+  }  
+  from('build/reports/'){  
+  include '*'  
+  }  
+  from('build/htmlReports/'){  
+  include '*'  
+  }  
+  //tudo menos os ficheiros que se pode gerar  
+  from('build/reports/'){  
+  include '*'  
+  }  
+  from('.'){  
+  include 'src'  
+  include 'frontend'  
+  include 'chromedriver'  
+  include 'chromedriver.exe'  
+  include 'Dockerfile'  
+  include 'docker-compose-staging.yml'  
+  include 'docker-compose-staging.yml'  
+  include 'Jenkinsfile'  
+  include 'gradle'  
+  include 'build.gradle'  
+  include 'config'  
+  include 'gradlew'  
+  include 'gradlew.bat'  
+  include 'settings.gradle'  
+  include 'gradle.properties'  
+  include 'README.pdf'  
+  }  
+}
+```
+
+As we can see we indicate the name of the archive with `archiveName` that will be G202_ODSOFT.zip and the destination directory with `destinationDir` that will be in the build folder. Then we specify the files and folders we want to zip.
+We included the deployed war file, Jenkinsfile, readme in pdf, all source code, all the reports and the Dockerfile and docker-compose files.
+
+After we run `./gradlew genZip` the specified files and folders will be compressed to a zip file in the build directory.
+
+In the pipeline we added the following stage:
+
+```groovy
+stage('GenerateZipFile'){  
+    steps{  
+        script{  
+            if (isUnix()){  
+                sh './gradlew genZip'  
+            }else{  
+                bat './gradlew genZip'  
+            }  
+        }  
+    }  
+}
+```
+
 ## 2.3 Code Quality and Integration Tests
 
 1220256 João Rocha was responsible for this task
