@@ -1303,7 +1303,37 @@ pipeline{
 
 This was the result of the conversion of the previous scripted pipeline to declarative pipeline.
 
-From now, the elements of the group will develop their tasks.
+
+- [x] **Maturity Model**
+
+In this part of the project we will evaluate our project following the CI/CD Maturity Model
+
+**Build Management and Continuous Integration**
+![Build Management and continuous integration](https://i.imgur.com/k2MVUEL.png)
+Our project is at level 0 because the process is partially automated and the process is documented but we don't have a trigger from source control. If we managed to implement the trigger (that we showed how to do it but we didn't apply because we didn't had access to the bitbucket webhooks) we would have hit level 1.
+
+**Environments and Deployment**
+![Environment and Deployment](https://i.imgur.com/PQKsFQD.png)
+In terms of environment and deployment we can say that we hit Level 1, meaning that we have an automated process applied across whole application lifecycle. Everytime we hit the build button on jenkins job, the new source code is fetched and then will pass through tests in a staging environment and will be deployed automatically to the production environment.
+
+**Release Management and Compliance**
+![Release Management and Compliance](https://i.imgur.com/53r8IqK.png)
+About the release management and compliance, since we are using GitHub flow, everything on the master branch is ready to be deployed but before hitting the master branch it passes though a Pull Request that most of the time is approved by two or more persons. So we would say that we are at Level 1, meaning the change management and approval process is defined and enforced. Regulatory and compliance conditions met.
+
+**Testing**
+![Testing](https://i.imgur.com/N03YPDX.png)
+In our project, the developers were also the testers. And those tests were written at the same time as the features were developed, in the pipeline the created tests are executed everytime a build happens and coverage report is generated for each build. So, we would say that we are at Level 1 Consistent, because we have automated unit and acceptance tests.
+
+**Data Management**
+![Data Management](https://i.imgur.com/3Vfs7cq.png)
+In our system, since we are using JPA, we apply changes to the database automatically when we deploy the project, so we would say that we are at level 1.
+
+**Configuration Management**
+![Configuration Management](https://i.imgur.com/QDwTP63.png)
+In terms of configurations we are at level 0 we use version control for everything to recreate software: source code, configuration, build and deploy scripts and data migrations.
+
+
+From now, the elements of the group will document their individual tasks.
 
 ## **2.2 Documentation and database **
 
