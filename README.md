@@ -2818,3 +2818,14 @@ String  createVersion() {
 	return versionName
 }
 ```
+
+- [x] **Analysis Results**
+
+1220256 João Rocha was responsible for this task
+
+The image below represents our results of the build pipeline:
+![Analysis Results](https://i.imgur.com/vj6PgmY.jpg)
+
+At the end of the project, is possible to observe that with more features more issues or bugs the project will have. After 33 builds, the project has 34 bugs and 228 issues, a total of 262 thresholds. For the project to be built we defined our quality gates until 400, otherwise the project would failed.
+
+The checkstyle has its own properties to validate the code quality, which are in the "config/checkstyle" folder. Also, all the issues in checkstyle and in spotbugs are considered warnings, because if they are considered as an error the build will fail, and that is not what we want.
