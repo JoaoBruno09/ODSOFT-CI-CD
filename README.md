@@ -1989,7 +1989,7 @@ stage('Cucumber'){
                 }else{
                     bat './gradlew cucumberTest'
                 }
-                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/tests/cucumber/', reportFiles: 'cucumber-report.html', reportName: 'Cucumber Report', reportTitles: '', useWrapperFileDirectly: true])
+                cucumber buildStatus: 'null', customCssFiles: '', customJsFiles: '', failedFeaturesNumber: -1, failedScenariosNumber: -1, failedStepsNumber: -1, fileIncludePattern: '*/.json', jsonReportDirectory: 'build/reports/tests/cucumber/', pendingStepsNumber: -1, reportTitle: 'Cucumber Report', skippedStepsNumber: -1, sortingMethod: 'ALPHABETICAL', undefinedStepsNumber: -1
             }catch (error){
                 currentBuild.result = 'FAILURE'
                 throw error
@@ -1998,7 +1998,9 @@ stage('Cucumber'){
     }
 }
 ```
-This stage includes a operating system verification and a publish HTML script to publish the report in Jenkins.
+This stage includes a operating system verification and uses the help of a jenkins plugin [Cucumber Report](https://plugins.jenkins.io/cucumber-reports/) to publish the Cucumber Tests report.
+
+This was the best option because with the publishHTML published a blank page.
 
 **One of the tasks requested in this project too, was that the image for docker container should be published in docker hub.**
 
@@ -2531,5 +2533,3 @@ stage('SmoketestProd'){
     }
 }
 ```
-
-

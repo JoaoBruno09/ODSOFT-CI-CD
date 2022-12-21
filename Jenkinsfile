@@ -264,7 +264,7 @@ pipeline{
                                 }else{
                                     bat './gradlew cucumberTest'
                                 }
-                                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/tests/cucumber/', reportFiles: 'cucumber-report.html', reportName: 'Cucumber Report', reportTitles: '', useWrapperFileDirectly: true])
+                                cucumber buildStatus: 'null', customCssFiles: '', customJsFiles: '', failedFeaturesNumber: -1, failedScenariosNumber: -1, failedStepsNumber: -1, fileIncludePattern: '*/.json', jsonReportDirectory: 'build/reports/tests/cucumber/', pendingStepsNumber: -1, reportTitle: 'Cucumber Report', skippedStepsNumber: -1, sortingMethod: 'ALPHABETICAL', undefinedStepsNumber: -1
                             }catch (error){
                                 currentBuild.result = 'FAILURE'
                                 throw error
