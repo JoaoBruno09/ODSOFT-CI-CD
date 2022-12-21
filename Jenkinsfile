@@ -178,7 +178,7 @@ pipeline{
                 }
             }
         }
-        stage("Parallel 2"){
+        stage("Parallel"){
             parallel{
                 stage("integrationTest"){
                     steps{
@@ -202,6 +202,30 @@ pipeline{
                         }
                     }
                 }
+                stage('End2EndTests'){
+                    steps{
+                        script{
+                            try{
+                                if (isUnix()){
+                                    sh './gradlew endToEnd'
+                                }else{
+                                    bat './gradlew endToEnd'
+                                }
+                                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/selenium/end2end/', reportFiles: 'index.html', reportName: 'End2End Report', reportTitles: '', useWrapperFileDirectly: true])
+                            }catch (error){
+                                currentBuild.result = 'FAILURE'
+                                throw error
+                            }
+                        }
+                    }
+                }        
+            }
+        }
+
+
+
+        stage("Parallel 2"){
+            parallel{
                 stage('jmeter'){
                     steps{
                         script{
@@ -219,16 +243,16 @@ pipeline{
                         }
                     }
                 }
-                stage('End2EndTests'){
+                stage('Cucumber'){
                     steps{
                         script{
                             try{
                                 if (isUnix()){
-                                    sh './gradlew endToEnd'
+                                    sh './gradlew cucumberTest'
                                 }else{
-                                    bat './gradlew endToEnd'
+                                    bat './gradlew cucumberTest'
                                 }
-                                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/htmlReports/selenium/end2end/', reportFiles: 'index.html', reportName: 'End2End Report', reportTitles: '', useWrapperFileDirectly: true])
+                                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/tests/cucumber/', reportFiles: 'cucumber-report.html', reportName: 'Cucumber Report', reportTitles: '', useWrapperFileDirectly: true])
                             }catch (error){
                                 currentBuild.result = 'FAILURE'
                                 throw error
