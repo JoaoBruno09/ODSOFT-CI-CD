@@ -31,13 +31,13 @@ pipeline{
                     try{
                         if (isUnix()){
                             //building and generating artifacts
-                            sh "./gradlew clean build '-Pvaadin.productionMode' -x test war"
+                            sh "./gradlew clean build '-Pvaadin.productionMode' -x test -x check war"
                             sh './gradlew renameDeployFile'
                             sh 'docker build -t odsoft-image .'
 
                         }else{
                             //building and generating artifacts
-                            bat "./gradlew clean build -Pvaadin.productionMode -x test war"
+                            bat "./gradlew clean build -Pvaadin.productionMode -x test -x check war"
                             bat './gradlew renameDeployFile'
                             bat "docker build -t odsoft-image ."
 
