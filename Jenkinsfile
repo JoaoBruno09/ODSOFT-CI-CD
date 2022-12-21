@@ -351,6 +351,47 @@ pipeline{
                 }
             }
         }
+        stage('updateDatabase'){
+            steps{
+                script{
+                    try{
+                        if (isUnix()){
+                            sh './gradlew tag -PliquibaseCommandValue="1"'
+                            sh './gradlew update'
+                        }else{
+                            bat './gradlew tag -PliquibaseCommandValue="1"'
+                            bat './gradlew update'
+                        }
+                    }catch(error){
+                        currentBuild.result = 'FAILURE'
+                        throw error
+                    }
+                }
+            }
+        }
+        stage('checkDbUpdate'){
+            steps{
+                script{
+                try{
+                    userInput = input(id: 'userInput',
+                    message: 'Did the upgrade went well ?',
+                    parameters: [
+                    [$class:'ChoiceParameterDefinition', choices: "Yes\nNo", name: 'Answer']
+                    ])
+                    if (userInput == "No"){
+                        if (isUnix(){
+                            sh "./gradlew rollback -PliquibaseCommandValue='1'"
+                        }else{
+                            bat "./gradlew rollback -PliquibaseCommandValue='1'"
+                        }
+                    }
+                }catch(error){
+                    currentBuild.result = 'FAILURE'
+                    throw error
+                }
+                }
+            }
+        }
     }
     post {
         always {
