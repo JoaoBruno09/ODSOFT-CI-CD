@@ -307,3 +307,43 @@ liquibase {
 task genLiquidFile{
     generateChangelog
 }
+
+//Generate zip file
+task genZip(type: Zip) {
+    archiveName = "G202_ODSOFT.zip" //name of the zip
+    destinationDir = file("build") //where is going to be generated the zip file
+
+    from('build/test-results/jmeter/'){
+        include 'test.jtl'
+    }
+    from('build/libs/') {
+        include 'ROOT.war'
+    }
+    from('build/reports/'){
+        include '*'
+    }
+    from('build/htmlReports/'){
+        include '*'
+    }
+    from('build/reports/'){
+        include '*'
+    }
+    from('.'){
+        include 'src'
+        include 'frontend'
+        include 'chromedriver'
+        include 'chromedriver.exe'
+        include 'Dockerfile'
+        include 'docker-compose-staging.yml'
+        include 'docker-compose-staging.yml'
+        include 'Jenkinsfile'
+        include 'gradle'
+        include 'build.gradle'
+        include 'config'
+        include 'gradlew'
+        include 'gradlew.bat'
+        include 'settings.gradle'
+        include 'gradle.properties'
+        include 'README.pdf'
+    }
+}
