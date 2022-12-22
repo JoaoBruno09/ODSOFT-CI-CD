@@ -30,7 +30,7 @@ Parallel pipeline, can execute more than one task at the same time so that we ca
 
 - [x] **1º Task - Repository Checkout:**
 
-For that we used the snippet generator and picked the sample step "checkout" where we indicate the repository and branch and we can generate the code snippet that will checkout the repository.
+For that we used the snippet generator and picked the sample step "checkout" where we indicate the repository and branch, and we can generate the code snippet that will checkout the repository.
 
 Created the pipeline and created the stage checkout.
 
@@ -91,7 +91,7 @@ tasks.register('copyArtifact', Copy) {
 }
 ```
 
-To publish we had to add this code snippet `archiveArtifacts artifacts: 'flowcrmtutorial-0.0.1-SNAPSHOT.war', followSymlinks: false` that we indicate the artifact path and it will be published on the job front page.
+To publish we had to add this code snippet `archiveArtifacts artifacts: 'flowcrmtutorial-0.0.1-SNAPSHOT.war', followSymlinks: false` that we indicate the artifact path, and it will be published on the job front page.
 
 - [x] **3º Task - Generate and publish javadoc**
 
@@ -113,7 +113,7 @@ After that we ran `./gradlew javadoc` it will generate the javadoc on the follow
 
 To publish it, we need to install [HTML Publisher](https://plugins.jenkins.io/htmlpublisher/) that is a Jenkins plugin that allow us to publish HTML files on the pipeline.
 
-After installing it, with snippet generator we selected "publishHTML" sample step and we had to provide the directory, the index page and the report title. With that, we generated the code snippet and implemented it on our Jenkinsfile resulting on the following stage:
+After installing it, with snippet generator we selected "publishHTML" sample step, and we had to provide the directory, the index page and the report title. With that, we generated the code snippet and implemented it on our Jenkinsfile resulting on the following stage:
 
 ```groovy
 
@@ -139,7 +139,7 @@ After running the stage successfully on the pipeline, on the left side tab we ca
 
 ![Side tab](https://i.imgur.com/NPkp29U.png)
 
-If we click on it we get redirected to the report!
+If we click on it, we get redirected to the report!
 
 # Individual Goals
 
@@ -452,7 +452,7 @@ This command allows Jenkins to find the report, in the mentioned directory `buil
 - [x] **1º Staging Deployment**
       For this stage we thought about two possible options:
 - Simulate the production environment on a docker container;
-- Create a instance on a cloud service and prepare it like it is the production environment.
+- Create an instance on a cloud service and prepare it like it is the production environment.
 
 We picked the creation of the instance on a cloud service (Amazon Web Sevices), created a EC2 Instance with Ubuntu 22.04 and Apache Tomcat version 9.
 
@@ -468,7 +468,7 @@ Summing up both of the guides, we installed:
 
 The key point of make things possible to deploy the project from Jenkins to the EC2 instance was configuring AWS EC2 security group and creating a tomcat user that is able to deploy by script.
 
-By default the Tomcat port is 8080, and we are keeping it but, its important to know it to configure the EC2 Instance security group.
+By default, the Tomcat port is 8080, and we are keeping it but, it's important to know it to configure the EC2 Instance security group.
 
 After configuring the security group we can try to access the tomcat with your ec2 Public IPv4 DNS:8080, for example: `http://ec2-3-85-104-7.compute-1.amazonaws.com:8080/`
 
@@ -498,7 +498,7 @@ And change the max file size and request size for this:
 
 After that we can jump to the Jenkins configuration of the credentials.
 
-In there we want to store the tomcat username and password and the most important part is defining a id for a dynamic approach when using the jenkinsfile in multiple computers.
+In there we want to store the tomcat username and password and the most important part is defining an id for a dynamic approach when using the jenkinsfile in multiple computers.
 
 To deploy we used the plugin [Deploy to Container].(https://plugins.jenkins.io/deploy/)
 
@@ -516,7 +516,7 @@ And generate the snippet:
 deploy adapters: [tomcat9(credentialsId: "odsoft", path: "", url: "http://ec2-3-85-104-7.compute-1.amazonaws.com:8080/")], contextPath: "crm", war: "flowcrmtutorial-0.0.1-SNAPSHOT.war"
 ```
 
-Well, at this point we had the everything ready, ran the job in jenkins and then occurred an error deploying the application to the Tomcat.
+Well, at this point we had everything ready, ran the job in jenkins and then occurred an error deploying the application to the Tomcat.
 
 Then we reached to the conclusion that to deploy the .war file we had to do some more things, so we searched in springboot docs and found [this documentation](https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/html/howto-traditional-deployment.html) about deploying.
 
@@ -529,10 +529,10 @@ protected  SpringApplicationBuilder  configure(SpringApplicationBuilder  applica
 }
 ```
 
-After that, the deploy was successful and we could open our beautiful application through the ec2 tomcat link + /crm, something like this: `http://ec2-3-85-104-7.compute-1.amazonaws.com:8080/crm `!
+After that, the deploy was successful, and we could open our beautiful application through the ec2 tomcat link + /crm, something like this: `http://ec2-3-85-104-7.compute-1.amazonaws.com:8080/crm `!
 
 - [x] **2º - System Test**
-      For the system test we will perform a automatic smoke test that will be checking if the base URL of the application is responsive after staging the deployment.
+      For the system test we will perform an automatic smoke test that will be checking if the base URL of the application is responsive after staging the deployment.
 
 For that we used the command line tool curl, that stands for client url, that is normally used for transfering data using various network protocols.
 
@@ -547,7 +547,7 @@ Where `$url` is the variable that holds the url that you want to get the http co
 For windows we used the following command
 `curl -s -o ./response -w '%%{http_code}' $url/crm"`
 
-Knowing the commands we just created a way to store the result and create a condition to verify is the response was positive and we could proceed or negative and we throw an error and abort the build.
+Knowing the commands we just created a way to store the result and create a condition to verify is the response was positive, and we could proceed or negative, and we throw an error and abort the build.
 
 ```groovy
 stage('systemTest'){
@@ -607,7 +607,7 @@ For that we pushed a tag to the repository that contains the build number and th
 
 Since on this first part of the assignment we are restricted to the use of scripted pipelines we can't use the [post build action](https://www.jenkins.io/doc/book/pipeline/syntax/#post) via code, forcing us to find another solution.
 
-After some research the best solution was wrapping all the stages with a try/catch/finally statement and on the finally push the tag to the repository.
+After some research the best solution was wrapping all the stages with a try/catch/finally statement and finally push the tag to the repository.
 
 Resulting on the following stage on the Jenkinsfile:
 
@@ -657,7 +657,7 @@ That way the tag will be pushed independently of the pipeline result and last co
   and requires a manual confirmation on the job console to continue the
   build.
 
-Inside a finally statement there's the continuous integration feedback that tags the repository with the build number and the build result.
+Inside the finally statement there's the continuous integration feedback that tags the repository with the build number and the build result.
 
 - [x] **Sequential pipeline analysis**
       Before we were building the pipeline as we developed the project requirements, now we stopped to think about the sequence of the stages that made more sense for us. Resulting on the following pipeline code:
@@ -828,7 +828,7 @@ The average time to run the sequential pipeline is approximately 1 minute and 42
 
 Analysis stage by stage:
 
-- The **checkout** stage the average run time is 1 seconds;
+- The **checkout** stage the average run time is 1 second;
 - The **build** stage the average run time is 20 seconds;
 - The **unitReport** stage average run time is 4 seconds;
 - The **unitReportCoverage** average run time is 2 seconds;
@@ -999,8 +999,8 @@ stage('manualTest'){
 For a clear view of the parallel pipeline implementation we made the following diagram:
 ![Parallel pipeline design](https://i.imgur.com/vnmb91U.jpg)
 
-We choose the stage mutationReportCoverage, unitReportCoverage and integrationReport to run in parallel because they have no dependencies between them and we thought we could "save" time by starting to run these three stages at the same time. As we can see after the first parallel we have another, because the last parallel generated stuff that was needed to run these other tasks so we stoped the parallel there to make sure we have the stuff that is needed for the other stages.
-The other parallel, runs the integrationReportCoverage, javadoc and staging stages since they have no dependencies between them and we thought again that we could save time.
+We choose the stage mutationReportCoverage, unitReportCoverage and integrationReport to run in parallel because they have no dependencies between them, and we thought we could "save" time by starting to run these three stages at the same time. As we can see after the first parallel we have another, because the last parallel generated stuff that was needed to run these other tasks so we stoped the parallel there to make sure we have the stuff that is needed for the other stages.
+The other parallel, runs the integrationReportCoverage, javadoc and staging stages since they have no dependencies between them, and we thought again that we could save time.
 
 On the following image we can see three runs of the parallel pipeline.
 ![Parallel pipeline runs](https://i.imgur.com/vWmqZy6.png)
@@ -1062,7 +1062,7 @@ This second assignment started a 17 Nov and ends at 22 Dec.
 - [x] **Suppliers**
       1220285 Tiago Lacerda was responsible for this feature
       For this feature was created the entity, the repository, the service, the form, and the view, everything for the suppliers can work properly.
-      The biggest difficult was when selecting two or more products should add all of those ones into data base.
+      The biggest difficulty was when saving multiple products into the database. 
 - [x] **Costumers**
       1220256 João Rocha was responsible for this feature
       For the customers feature, was created the Customer entity, the Customer repository, the Customer service, the Customer Form, the Customer View and the Admin Customer View. Also was created the Integration Test for the Customer View and the Unit Test for the Customer From.
@@ -1074,32 +1074,32 @@ This second assignment started a 17 Nov and ends at 22 Dec.
 - [x] **Product Categories**
       1220256 Gonçalo Pinho was responsible for this feature
       For the Product Categories, the last feature, was developed the Product entity, the Product repository, the Product Service and the Product View.
-      The biggest difficult was due to a short time to learn Vaadin because this technology was neved used before.
+      The biggest difficulty was due to a short time to learn Vaadin because this technology was never used before.
 
 ## 2.1 Base pipeline and persistence
 
 This point was developed by all team members.
 
-We choosed to use Github flow as our branch model since its a simple method to work with branches. Github flow uses just two branches, the master and the feature, in this last one will have all commits and then we open PR to the master branch, as it is shown in the image below:
+We chose to use GitHub flow as our branch model since it's a simple method to work with branches. GitHub flow uses just two branches, the master and the feature, in this last one will have all commits, and then we open PR to the master branch, as it is shown in the image below:
 
 ![enter image description here](https://user-images.githubusercontent.com/6351798/48032310-63842400-e114-11e8-8db0-06dc0504dcb5.png)
 
-To trigger the pipeline we thought about using bitbucket webhook, so when the master branch receives a new commit will trigger the pipeline. To achieve this, it's necessary to go to the bitbucket repository settings and add the webhook refering the jenkins URL + /bitbucket-hook/. For jenkins to be able to receive this triggers it's necessary to have the [Bitbucket](https://plugins.jenkins.io/bitbucket/) plugin and enable the trigger on the job.
+To trigger the pipeline we thought about using bitbucket webhook, so when the master branch receives a new commit will trigger the pipeline. To achieve this, it's necessary to go to the bitbucket repository settings and add the webhook referring the jenkins URL + /bitbucket-hook/. For jenkins to be able to receive this triggers it's necessary to have the [Bitbucket](https://plugins.jenkins.io/bitbucket/) plugin and enable the trigger on the job.
 
-Atfer we evaluate the project and discuss each other, we made a prevision of the pipeline:
+After we evaluate the project and discuss each other, we made a prevision of the pipeline:
 ![Alt text](pipeline-diagrams/pipelineA2.png?raw=true "Pipeline Prevision Assignment2")
 
 We opted to use the parallel pipeline because after the presentation of the first assignment we found out we could have a better performance by increasing the number of executors.
-The first group of parallel stages is composed by the following stages: intializing staging environment, unit tests, check and mutation tests. The first stage doesn't wait for the server to initialize, so we thought about having other stages in the same group.
-If this group is done without errors, the pipeline can continue and will do the smoke test followed by the manual acceptence test. Afterwards, the second group of parallel stages is composed by IT tests and End2End tests, finally the third one is composed with Jmeter and Cucumber stages. This happens because the group computers are not good enough to have multiple instances of web browsers.
-Furthermore, the last group of parallel it's similiar as the first one, because the first stage doesn't need to wait for the production server to initialize, so we followed the same logic as before and added other stages to the group.
+The first group of parallel stages is composed by the following stages: initializing staging environment, unit tests, check and mutation tests. The first stage doesn't wait for the server to initialize, so we thought about having other stages in the same group.
+If this group is done without errors, the pipeline can continue and will do the smoke test followed by the manual acceptance test. Afterwards, the second group of parallel stages is composed by IT tests and End2End tests, finally the third one is composed with Jmeter and Cucumber stages. This happens because the group computers are not good enough to have multiple instances of web browsers.
+Furthermore, the last group of parallel it's similar as the first one, because the first stage doesn't need to wait for the production server to initialize, so we followed the same logic as before and added other stages to the group.
 Finally, it's performed the last stage of the pipeline, which includes the smoke tests in the production server and the generation of a tag even if the pipeline is built or not.
 
-We chose PostgreSQL as our relational database, because it was a group preference.
+We chose PostgresSQL as our relational database, because it was a group preference.
 
 In the first assignment we only could use scripted pipeline, but in this one we had to use the declarative one, so the first step of the second assignment was to convert the previous one into a declarative pipeline.
 
-The first staging environment we had was AWS EC2 instance, due to high costs we choosed to use docker containers.
+The first staging environment we had was AWS EC2 instance, due to high costs we chose to use docker containers.
 
 ```groovy
 def version = "0.0.1"
@@ -1328,7 +1328,7 @@ In this part of the project we will evaluate our project following the CI/CD Mat
 
 **Build Management and Continuous Integration**
 ![Build Management and continuous integration](https://i.imgur.com/k2MVUEL.png)
-Our project is at level 0 because the process is partially automated and the process is documented but we don't have a trigger from source control. If we managed to implement the trigger (that we showed how to do it but we didn't apply because we didn't had access to the bitbucket webhooks) we would have hit level 1.
+Our project is at level 0 because the process is partially automated and the process is documented, but we don't have a trigger from source control. If we managed to implement the trigger (that we showed how to do it, but we didn't apply because we didn't have access to the bitbucket webhooks) we would have hit level 1.
 
 **Environments and Deployment**
 ![Environment and Deployment](https://i.imgur.com/PQKsFQD.png)
@@ -1487,9 +1487,9 @@ stage('GenerateZipFile'){
 
 [Checkstyle](https://checkstyle.sourceforge.io/) is a tool that verifies if the code was written follows the specified encoding rules.
 
-Firstly, was chosen whose modules and its properties of Checkstyle should be use to check the code:
+Firstly, the Checkstyle's modules and their properties were chosen and should be used to check the code:
 
-```java
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE  module PUBLIC"-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
 "https://checkstyle.org/dtds/configuration_1_3.dtd">
@@ -1523,7 +1523,7 @@ Firstly, was chosen whose modules and its properties of Checkstyle should be use
 
 To apply the Checkstyle to this project, was added the plugin checkstyle into build.gradle, as it is shown below
 
-```java
+```groovy
 plugins {
 id  'checkstyle'
 }
@@ -2136,13 +2136,13 @@ stage('Cucumber'){
 }
 ```
 
-This stage includes a operating system verification and uses the help of a jenkins plugin [Cucumber Report](https://plugins.jenkins.io/cucumber-reports/) to publish the Cucumber Tests report.
+This stage includes an operating system verification and uses the help of a jenkins plugin [Cucumber Report](https://plugins.jenkins.io/cucumber-reports/) to publish the Cucumber Tests report.
 
 This was the best option because with the publishHTML published a blank page.
 
 **One of the tasks requested in this project too, was that the image for docker container should be published in docker hub.**
 
-For that we need to create a docker hub account and after we made the login we need to follow the following steps:
+For that we need to create a docker hub account, and after we made the login we need to follow the following steps:
 
 - Click in our username on the right top corner and select the option '**_Account Settings_**' and then click at '**_Security_**' in the sidebar.
 
@@ -2200,7 +2200,7 @@ stage("Build"){
 
 In order to push the image to docker hub we had to update the build stage in the Jenkinsfile.
 
-As we can see with the "**_withCredentials_**" method we indicated the ID of the credential and we get access to the username and password.
+As we can see with the "**_withCredentials_**" method we indicated the ID of the credential, and we get access to the username and password.
 In the pipeline, after we build the image we access the docker hub credentials that we created before and login in docker. Then we tag the image and push to docker hub.
 As we can see in this link it is possible see the image:
 [Image pushed to Docker Hub](https://hub.docker.com/repository/docker/1220257/odsoft-image/)
@@ -2211,7 +2211,7 @@ The student Tiago Lacerda - 1220285 was the one in charge of this topic.
 
 - [x] **Pipelane stages**
 
-In order to run the End To End tests in the pipeline, we had to add a new stage in the Jenkinsfile.
+In order to run the End-To-End tests in the pipeline, we had to add a new stage in the Jenkinsfile.
 
 ```groovy
 stage('End2EndTests'){
@@ -2233,7 +2233,7 @@ stage('End2EndTests'){
 }
 ```
 
-This stage includes a operating system verification and a publishHTML script to publish the report in Jenkins.
+This stage includes an operating system verification and a publishHTML script to publish the report in Jenkins.
 
 To run the JMeter task in Jenkins, we need another stage like this:
 
@@ -2257,10 +2257,10 @@ stage('jmeter'){
 }
 ```
 
-To publish this report, we can not use the traditional publishHTML and instead we need another Jenkins Plugin named [Performance Plugin](https://plugins.jenkins.io/performance/).
+To publish this report, we can not use the traditional publishHTML, and instead we need another Jenkins Plugin named [Performance Plugin](https://plugins.jenkins.io/performance/).
 So we establish that if the test fails 10 requests, the build will become unstable and if it fails 50 requests, the build will fail.
 
-- [x] **End To End testing**
+- [x] **End-To-End testing**
 
 End-to-end (E2E) tests are a type of automated testing that involves simulating the actions of a real user interacting with your application. They are designed to test the entire workflow of your application, from start to finish, to ensure that it is functioning correctly and as intended.
 
@@ -2654,7 +2654,7 @@ stage("DeployProd"){
 }
 ```
 
-As we can see on the code snipped, first, we shutdown the docker-compose-staging and then we start the docker-compose that has the production environment.
+As we can see on the code snipped, first, we shutdown the docker-compose-staging, and then we start the docker-compose that has the production environment.
 
 After the environment is up, we perform a smoke test:
 
@@ -2689,7 +2689,7 @@ stage('SmoketestProd'){
 - [x] **Upgrade database and rollback if the upgrade fails**
       To make the database upgrade we used [liquibase](https://www.liquibase.org) that is a library that tracks, manage and applies database schema changes.
 
-We used it as a gradle plugin since they have it, we can find some of the documentation [here](https://docs.liquibase.com/tools-integrations/gradle/getting-started-liquibase-gradle.html).
+We used it as a gradle plugin since they have it, we can find some documentation [here](https://docs.liquibase.com/tools-integrations/gradle/getting-started-liquibase-gradle.html).
 
 First of all we imported the plugin on gradle:
 
@@ -2711,7 +2711,7 @@ dependencies{
 }
 ```
 
-Note that in our case we used postgresql so we will use the connector for postgresql. If you want to use other DBMS you need to edit the connector.
+Note that in our case we used postgresql, so we will use the connector for postgresql. If you want to use other DBMS you need to edit the connector.
 
 After having the liquibase plugin applied and the dependencies we start to configure the database access (we can have more than one configuration if you have more than one database).
 
@@ -2729,7 +2729,7 @@ liquibase {
 }
 ```
 
-The changeLogFile, is a file that is generated or you manually create it to apply changes to the database. You can use .sql, .xml, .yaml, .json or .groovy files to make those changes. We used xml.
+The changeLogFile, is a file that is generated, or you manually create it to apply changes to the database. You can use .sql, .xml, .yaml, .json or .groovy files to make those changes. We used xml.
 
 The url is the connection to your database, you should change it to your values.
 
@@ -2746,7 +2746,7 @@ To clarify things, the next code snippet is a xml example to create a table with
  </changeSet></databaseChangeLog>
 ```
 
-If we run the command `./gradlew tasks`it's possible to see the list of liquibase commands, this is a super powerful tool to track and manage databases but we will only use 3 commands:
+If we run the command `./gradlew tasks`it's possible to see the list of liquibase commands, this is a super powerful tool to track and manage databases, but we will only use 3 commands:
 
 - `./gradlew tag -PliquibaseCommandValue="1"` - This command allows us to create a tag to a certain database state.
 - `./gradlew update` - This command allows us to update the database with the changes on the changelog file we've created.
@@ -2848,6 +2848,6 @@ String  createVersion() {
 The image below represents our results of the build pipeline:
 ![Analysis Results](https://i.imgur.com/vj6PgmY.jpg)
 
-At the end of the project, is possible to observe that with more features more issues or bugs the project will have. After 33 builds, the project has 34 bugs and 228 issues, a total of 262 thresholds. For the project to be built we defined our quality gates until 400, otherwise the project would failed.
+At the end of the project, is possible to observe that with more features more issues or bugs the project will have. After 33 builds, the project has 34 bugs and 228 issues, a total of 262 thresholds. For the project to be built we defined our quality gates until 400, otherwise the project would fail.
 
 The checkstyle has its own properties to validate the code quality, which are in the "config/checkstyle" folder. Also, all the issues in checkstyle and in spotbugs are considered warnings, because if they are considered as an error the build will fail, and that is not what we want.
