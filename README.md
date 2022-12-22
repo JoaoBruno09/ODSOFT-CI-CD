@@ -2851,3 +2851,40 @@ The image below represents our results of the build pipeline:
 At the end of the project, is possible to observe that with more features more issues or bugs the project will have. After 33 builds, the project has 34 bugs and 228 issues, a total of 262 thresholds. For the project to be built we defined our quality gates until 400, otherwise the project would fail.
 
 The checkstyle has its own properties to validate the code quality, which are in the "config/checkstyle" folder. Also, all the issues in checkstyle and in spotbugs are considered warnings, because if they are considered as an error the build will fail, and that is not what we want.
+
+## Final Thoughts
+
+![Final pipeline](https://i.imgur.com/geSFlp8.png)
+
+This last pipeline printscreen is the final result of our project, which is not very different from what we expected, we have three parallel stages that are:
+Parallel 1: Check (Checkstyle and spotbugs verification), Initializing staging environment and unit tests
+Parallel 2: End to End tests and integration tests
+Parallel 3: Cucumber and JMeter
+Parallel 4: Markdown to PDF, Deploy to production and Javadoc
+
+As it was explained on the first part of this second assignment (2.1), in the first parallel stage we used other tasks in a way that the staging environment would have time to start so that the following smoke test doens't fail.
+The parallel 2 and 3 we separated them because the computers of some group members couldn't handle that much instances of google chrome.
+The last parallel we followed the same logic as the first one, because we used other stages in a way that the production server doesn't fail.
+
+Decription of each stage of the pipeline:
+
+- **Checkout**: checkout from master branch on bitbucket repository;
+- **Build**: Generate war file, create docker image and publish it on docker hub;
+- **Check**: Runs checkstyle and spotbugs and verifies the quality gates and defines if the build is stable or instable;
+- **InitializingStagingEnv**: Starts the staging environment and deploy the changes;
+- **mutationTest**: Runs mutation tests and publishes reports;
+- **unitTests**: Runs unit tests and publishes reports;
+- **SmokeTestsStaging**: Smoke tests the staging environment;
+- **UpdateDatabaseStaging**: Tags the database state and updates it with a change log;
+- **ManualAcceptanceTest**: sends an email and asks the user if the application is running well if he answers that something is wrong we rollback the database upgrade;
+- **End2EndTests** - runs the end to end tests;
+- **integrationTests** - Runs integration tests, publishes report and checks if it has the minimum amount of coverage;
+- **Cucumber**: Runs the cucumber acceptance tests;
+- **JMeter**: Runs the jmeter jmx file;
+- **ConvertMDtoPDF**: converts the readme to pdf;
+- **DeployProd**: Starts the production server and deploy the changes;
+- **Javadoc**: generates javadoc;
+- **GenZipFile**: generates a zip file with the files and folders asked;
+- **SmokeTestProd**: smoke test the production environment;
+- **updateProdDatabase** - Updates production database if the user reports on the manual test that the application was running well with the database upgrade;
+- **tag (doesnt show on the printscreen)** - always pushes a tag with the version of the deploy files, build number and result;
