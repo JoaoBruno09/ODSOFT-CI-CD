@@ -1444,7 +1444,7 @@ task genZip(type: Zip) {
   include 'chromedriver.exe'
   include 'Dockerfile'
   include 'docker-compose-staging.yml'
-  include 'docker-compose-staging.yml'
+  include 'docker-compose.yml'
   include 'Jenkinsfile'
   include 'gradle'
   include 'build.gradle'
