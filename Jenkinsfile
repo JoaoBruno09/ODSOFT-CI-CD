@@ -1,6 +1,7 @@
 def version = createVersion()
 def url = "http://localhost:8082"
 def job_console = "http://localhost:8085/job/${env.JOB_NAME}/${env.BUILD_NUMBER}/console"
+def user_input
 pipeline{
     agent any;
     options{
@@ -171,18 +172,42 @@ pipeline{
             }
         }
 
+        stage('updateStagingDatabase'){
+            steps{
+                script{
+                    try{
+                        if (isUnix()){
+                            sh './gradlew tag -PliquibaseCommandValue="1"'
+                            sh './gradlew update'
+                        }else{
+                            bat './gradlew tag -PliquibaseCommandValue="1"'
+                            bat './gradlew update'
+                        }
+                    }catch(error){
+                        currentBuild.result = 'FAILURE'
+                        throw error
+                    }
+                }
+            }
+        }
         stage('ManualAcceptanceTest'){
-        //TODO change this stage to the staging env this doesnt make sense to be after prod
             steps{
                 script{
                     try{
                         emailext body: "Greetings developer,\n I'm here to tell you that the application is up and running! Now you should manually test it to confirm if it meets your standarts\n The link is: $url/login\n After that please proceed to manually confirm that you want to proceed or abort with the following link: $job_console \n This is an automated message from your Jenkins job.", subject: "Job Manual Test of Build#${env.BUILD_NUMBER}", to: "1220257@isep.ipp.pt"
-                        userInput = input(id: 'userInput',
-                                message: 'Have you manually tested the application?',
+                        user_input = input(id: 'userInput',
+                                message: 'Please Manually Test the application. Did all went ok?',
                                 parameters: [
                                     [$class:'ChoiceParameterDefinition', choices: "Yes\nNo", name: 'Answer']
                                         ]
                         )
+                        if (user_input == "No"){
+                            if (isUnix()){
+                                sh "./gradlew rollback -PliquibaseCommandValue='1'"
+                            }else{
+                                bat "./gradlew rollback -PliquibaseCommandValue='1'"
+                            }
+                        }
                     }catch(error){
                         currentBuild.result = 'FAILURE'
                         throw error
@@ -233,9 +258,6 @@ pipeline{
                 }        
             }
         }
-
-
-
         stage("Parallel 3"){
             parallel{
                 stage('jmeter'){
@@ -362,44 +384,21 @@ pipeline{
                 }
             }
         }
-        stage('updateDatabase'){
+        stage('updateProdDatabase'){
             steps{
                 script{
                     try{
-                        if (isUnix()){
-                            sh './gradlew tag -PliquibaseCommandValue="1"'
-                            sh './gradlew update'
-                        }else{
-                            bat './gradlew tag -PliquibaseCommandValue="1"'
-                            bat './gradlew update'
+                        if (user_input == "Yes"){
+                            if (isUnix()){
+                                sh './gradlew update'
+                            }else{
+                                bat './gradlew update'
+                            }
                         }
                     }catch(error){
                         currentBuild.result = 'FAILURE'
                         throw error
                     }
-                }
-            }
-        }
-        stage('checkDbUpdate'){
-            steps{
-                script{
-                try{
-                    userInput = input(id: 'userInput',
-                    message: 'Did the upgrade went well ?',
-                    parameters: [
-                    [$class:'ChoiceParameterDefinition', choices: "Yes\nNo", name: 'Answer']
-                    ])
-                    if (userInput == "No"){
-                        if (isUnix()){
-                            sh "./gradlew rollback -PliquibaseCommandValue='1'"
-                        }else{
-                            bat "./gradlew rollback -PliquibaseCommandValue='1'"
-                        }
-                    }
-                }catch(error){
-                    currentBuild.result = 'FAILURE'
-                    throw error
-                }
                 }
             }
         }

@@ -2755,7 +2755,7 @@ If we run the command `./gradlew tasks`it's possible to see the list of liquibas
 To the pipeline it was added the following stages:
 
 ```groovy
-stage('updateDatabase'){
+stage('updateStagingDatabase'){
     steps{
         script{
             try{
@@ -2768,39 +2768,61 @@ stage('updateDatabase'){
                 }
             }catch(error){
                 currentBuild.result = 'FAILURE'
-  throw error
+                throw error
             }
         }
     }
 }
-stage('checkDbUpdate'){
+stage('ManualAcceptanceTest'){
     steps{
         script{
-        try{
-            userInput = input(id: 'userInput',
-            message: 'Did the upgrade went well ?',
-            parameters: [
-            [$class:'ChoiceParameterDefinition', choices: "Yes\nNo", name: 'Answer']
-            ])
-            if (userInput == "No"){
-                if (isUnix(){
-                    sh "./gradlew rollback -PliquibaseCommandValue='1'"
-                }else{
-                    bat "./gradlew rollback -PliquibaseCommandValue='1'"
+            try{
+                emailext body: "Greetings developer,\n I'm here to tell you that the application is up and running! Now you should manually test it to confirm if it meets your standarts\n The link is: $url/login\n After that please proceed to manually confirm that you want to proceed or abort with the following link: $job_console \n This is an automated message from your Jenkins job.", subject: "Job Manual Test of Build#${env.BUILD_NUMBER}", to: "1220257@isep.ipp.pt"
+                user_input = input(id: 'userInput',
+                        message: 'Please Manually Test the application. Did all went ok?',
+                        parameters: [
+                                [$class:'ChoiceParameterDefinition', choices: "Yes\nNo", name: 'Answer']
+                        ]
+                )
+                if (user_input == "No"){
+                    if (isUnix()){
+                        sh "./gradlew rollback -PliquibaseCommandValue='1'"
+                    }else{
+                        bat "./gradlew rollback -PliquibaseCommandValue='1'"
+                    }
                 }
+            }catch(error){
+                currentBuild.result = 'FAILURE'
+                throw error
             }
-        }catch(error){
-            currentBuild.result = 'FAILURE'
-  throw error
-        }
         }
     }
 }
 ```
-
-We have the stage to upgrade that tags the database and upgrades it with the changelog file content.
-
-And then we test the database update, we ask for a user input to tell us if it went well or not. If something bad has happened he answers no and the changes will be reverted.
+This first change was made first in the staging environment just to make sure if it can go to production.
+We have the stage to upgrade that tags the database and upgrades it with the changelog file content. 
+And then we test the database update, we updated user manual test and saved the user input to tell us if it went well or not. If something bad has happened he answers no and the changes will be reverted.
+Note that if he answers no this change will not be applied to the production but if he says that it went ok this change will be applied on the production environment as we can see on the next pipeline snippet.
+```groovy
+stage('updateProdDatabase'){
+    steps{
+        script{
+            try{
+                if (user_input == "Yes"){
+                    if (isUnix()){
+                        sh './gradlew update'
+                    }else{
+                        bat './gradlew update'
+                    }
+                }
+            }catch(error){
+                currentBuild.result = 'FAILURE'
+                throw error
+            }
+        }
+    }
+}
+```
 
 - [x] **Generate Build Version**
       1220256 João Rocha was responsible for this task
