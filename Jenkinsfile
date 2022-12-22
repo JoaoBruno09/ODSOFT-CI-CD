@@ -126,23 +126,6 @@ pipeline{
                         }
                     }
                 }
-                stage('mutationTest'){
-                    steps{
-                        script{
-                            try{
-                                if (isUnix()){
-                                    sh './gradlew pitest'
-                                }else{
-                                    bat './gradlew pitest'
-                                }
-                                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/pitest', reportFiles: 'index.html', reportName: 'Mutation Tests Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
-                            }catch(error){
-                                currentBuild.result = 'FAILURE'
-                                throw error
-                            }
-                        }
-                    }
-                }
             //END OF PARRALEL 1
             }
         }
@@ -157,7 +140,7 @@ pipeline{
                             httpCode = bat( script: "curl -s -o ./response -w %%{http_code} $url/login", returnStdout: true).trim()
                             httpCode = httpCode.readLines().drop(1).join(" ")//windows returns full command plus the response, but the response is at a new line so we can drop the first line and remove spaces and we get only the http code
                         }
-                                //checking if the http code was ok(200) or found(302)
+                        //checking if the http code was ok(200) or found(302)
                         if (httpCode == "200" || httpCode == "302"){
                             echo 'The application is responding!'
                         }else{
