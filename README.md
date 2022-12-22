@@ -1428,7 +1428,6 @@ task genZip(type: Zip) {
 
     //reports
     from fileTree('build/reports/')
-    from fileTree('build/reports/')
     from fileTree('build/htmlReports/')
     from('build/test-results/jmeter/'){
         include 'test.jtl'
