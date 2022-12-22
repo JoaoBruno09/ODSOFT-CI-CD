@@ -313,37 +313,41 @@ task genZip(type: Zip) {
     archiveName = "G202_ODSOFT.zip" //name of the zip
     destinationDir = file("build") //where is going to be generated the zip file
 
-    from('build/test-results/jmeter/'){
-        include 'test.jtl'
-    }
+    //war file
     from('build/libs/') {
         include 'ROOT.war'
     }
-    from('build/reports/'){
-        include '*'
+
+    //reports
+    from fileTree('build/reports/')
+    from fileTree('build/reports/')
+    from fileTree('build/htmlReports/')
+    from('build/test-results/jmeter/'){
+        include 'test.jtl'
     }
-    from('build/htmlReports/'){
-        include '*'
-    }
-    from('build/reports/'){
-        include '*'
-    }
+
+    //source code
     from('.'){
-        include 'src'
-        include 'frontend'
-        include 'chromedriver'
-        include 'chromedriver.exe'
-        include 'Dockerfile'
-        include 'docker-compose-staging.yml'
-        include 'docker-compose.yml'
-        include 'Jenkinsfile'
-        include 'gradle'
-        include 'build.gradle'
-        include 'config'
-        include 'gradlew'
-        include 'gradlew.bat'
-        include 'settings.gradle'
-        include 'gradle.properties'
-        include 'README.pdf'
+        exclude '.git'
+        exclude '.gradle'
+        exclude 'build'
+        exclude 'node_modules'
+        exclude 'pipeline-diagrams'
+        exclude '.gitignore'
+        exclude '.gitpod.yml'
+        exclude 'JenkinsfileParallel'
+        exclude 'LICENSE.md'
+        exclude 'odsoft_2022-2023_project_pa2_self-assessment_v1.0.pdf'
+        exclude 'package.json'
+        exclude 'package-lock.json'
+        exclude 'parallel_pipeline.png'
+        exclude 'sequential_pipeline.png'
+        exclude 'settings.gradle'
+        exclude 'tsconfig.json'
+        exclude 'types.d.ts'
+        exclude 'vite.config.ts'
+        exclude 'vite.generated.ts'
+        exclude 'README.md'
+        exclude 'bin'
     }
 }
